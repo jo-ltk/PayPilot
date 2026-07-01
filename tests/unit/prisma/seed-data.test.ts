@@ -64,4 +64,9 @@ describe("buildSeedData integrity", () => {
       "easebuzz:txn:EZTXN1001:success",
     );
   });
+
+  it("omits gateway secrets from buildSeedData (encrypted at seed time)", () => {
+    expect(data.gateway).not.toHaveProperty("key");
+    expect(data.gateway).not.toHaveProperty("salt");
+  });
 });

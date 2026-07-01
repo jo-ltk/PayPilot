@@ -29,6 +29,12 @@ export const SEED_IDS = {
   webhookEvent: "seed_webhook_1",
 } as const;
 
+/** Plaintext demo Easebuzz credentials — encrypted by {@link prisma/seed.ts} before persist. */
+export const DEMO_GATEWAY_SECRETS = {
+  key: "demo-merchant-key-1234",
+  salt: "demo-merchant-salt-5678",
+} as const;
+
 const GROSS_PAISE = 150000;
 const FEES_PAISE = 3000;
 const NET_PAISE = GROSS_PAISE - FEES_PAISE;
@@ -60,7 +66,7 @@ export function buildSeedData() {
       email: "owner@settleflow-demo.test",
       // bcrypt hash of "password123" (cost 12) — demo only.
       passwordHash:
-        "$2b$12$8Q9b3w8m1xqg0rT0Y2W1auQk4y6E3s7n0qkJ7r9oQ8wZ1m2N3oQy",
+        "$2b$12$bqMyUW2oCOOzY9LWnP8TleGPnz7vRGFC5I0WzpWX3oCe5TKLI4n2.",
       name: "Demo Owner",
     },
     member: {
@@ -74,9 +80,6 @@ export function buildSeedData() {
       id: SEED_IDS.gateway,
       shopId: SEED_IDS.shop,
       provider: GatewayProvider.EASEBUZZ,
-      // Encrypted-at-rest in real flow; placeholder ciphertext for seed.
-      key: "enc:demo-key",
-      salt: "enc:demo-salt",
       merchantEmail: "merchant@settleflow-demo.test",
       environment: GatewayEnvironment.SANDBOX,
       isActive: true,

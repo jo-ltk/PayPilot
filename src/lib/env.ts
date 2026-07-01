@@ -23,6 +23,18 @@ export type Env = z.infer<typeof envSchema>;
 
 let cachedEnv: Env | null = null;
 
+/** Treats empty strings as unset (common in .env files for optional vars). */
+function normalizeEnv(
+  env: NodeJS.ProcessEnv,
+): Record<string, string | undefined> {
+  return Object.fromEntries(
+    Object.entries(env).map(([key, value]) => [
+      key,
+      value === "" ? undefined : value,
+    ]),
+  );
+}
+
 /**
  * Validates and returns environment variables.
  * @returns Parsed environment configuration
@@ -33,7 +45,7 @@ export function getEnv(): Env {
     return cachedEnv;
   }
 
-  cachedEnv = envSchema.parse(process.env);
+  cachedEnv = envSchema.parse(normalizeEnv(process.env));
   return cachedEnv;
 }
 

@@ -1,6 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { resolve } from "path";
 
-import { buildSeedData } from "./seed-data";
+import { PrismaClient } from "@prisma/client";
+import { config } from "dotenv";
+
+import { encrypt } from "@/lib/crypto/encrypt";
+
+import { buildSeedData, DEMO_GATEWAY_SECRETS } from "./seed-data";
+
+config({ path: resolve(process.cwd(), ".env.local") });
+config({ path: resolve(process.cwd(), ".env") });
 
 const prisma = new PrismaClient();
 
@@ -29,10 +37,15 @@ async function main(): Promise<void> {
     create: data.member,
   });
 
+  const gateway = {
+    ...data.gateway,
+    key: encrypt(DEMO_GATEWAY_SECRETS.key),
+    salt: encrypt(DEMO_GATEWAY_SECRETS.salt),
+  };
   await prisma.paymentGateway.upsert({
-    where: { id: data.gateway.id },
-    update: data.gateway,
-    create: data.gateway,
+    where: { id: gateway.id },
+    update: gateway,
+    create: gateway,
   });
 
   await prisma.matchingConfig.upsert({
