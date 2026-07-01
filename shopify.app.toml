@@ -1,0 +1,27 @@
+# PayPilot — Shopify app configuration
+# Managed installation: Shopify handles the install/permission grant; the app
+# authenticates with token exchange (no OAuth redirect inside the iframe).
+
+name = "PayPilot"
+client_id = ""
+application_url = "https://localhost:3000"
+embedded = true
+
+# Managed installation flow (2026 best practice). Do not enable legacy OAuth.
+use_legacy_install_flow = false
+
+[access_scopes]
+scopes = "read_orders,read_all_orders"
+
+[auth]
+redirect_urls = [ "https://localhost:3000/api/auth/shopify" ]
+
+[webhooks]
+api_version = "2025-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/paid", "orders/updated", "refunds/create", "app/uninstalled" ]
+  uri = "/api/webhooks/shopify"
+
+[pos]
+embedded = false

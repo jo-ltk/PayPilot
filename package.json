@@ -1,26 +1,66 @@
 {
-  "name": "settleflow-temp",
+  "name": "settleflow",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
+    "prisma:studio": "prisma studio",
+    "openapi:generate": "tsx scripts/openapi-generate.ts",
+    "openapi:types": "openapi-typescript openapi/spec.json -o src/types/api.ts",
+    "security:audit": "tsx scripts/security-audit.ts"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@logtail/node": "^0.5.8",
+    "@logtail/pino": "^0.5.8",
+    "@prisma/client": "^6.19.0",
+    "@sentry/nextjs": "^10.62.0",
+    "@shopify/shopify-api": "^11.14.0",
+    "bcryptjs": "^3.0.2",
+    "inngest": "^3.40.1",
+    "jose": "^6.1.0",
     "next": "16.2.9",
+    "pino": "^9.9.0",
+    "posthog-node": "^5.39.1",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.0.2",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "msw": "^2.11.2",
+    "openapi-typescript": "^7.9.1",
+    "pino-pretty": "^13.1.1",
+    "prisma": "^6.19.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.20.5",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

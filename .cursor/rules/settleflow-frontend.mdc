@@ -1,0 +1,29 @@
+---
+description: SettleFlow frontend stack, patterns, and constraints
+globs: src/app/**,src/components/**,src/hooks/**,src/lib/**,src/types/**
+alwaysApply: false
+---
+
+# SettleFlow Frontend Rules
+
+Follow `docs/frontend-plan.md` exactly. Start only after backend B7 is complete.
+
+## Stack (Locked)
+
+shadcn/ui · TanStack Query v5 · TanStack Table · Recharts · Framer Motion · Lucide · Tailwind v4
+
+- Server Components by default; `"use client"` only when needed
+- **No Polaris** — App Bridge for session tokens only
+- No Redux, SWR, or hand-rolled UI primitives
+
+## Architecture
+
+- API types from OpenAPI/Zod — never hand-duplicate
+- All fetch via `lib/api-client.ts` (envelope + auth headers)
+- Shared page components in `components/`; only `layout/` shells differ (embedded vs standalone)
+- **Do not modify backend code**
+
+## Design
+
+Black & white neutral palette; color only for status (green/yellow/red; blue for primary CTA).
+Customize shadcn via CSS variables only — do not edit component source.

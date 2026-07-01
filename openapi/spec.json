@@ -1,0 +1,1958 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PayPilot API",
+    "version": "0.1.0",
+    "description": "Shopify Payment Analytics & Settlement Reconciliation"
+  },
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Standalone finance login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "memberships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shopId": {
+                                "type": "string"
+                              },
+                              "role": {
+                                "type": "string",
+                                "enum": [
+                                  "OWNER",
+                                  "ADMIN",
+                                  "VIEWER"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "shopId",
+                              "role"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "userId",
+                        "email",
+                        "memberships"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/shopify": {
+      "post": {
+        "summary": "Shopify session token exchange",
+        "responses": {
+          "200": {
+            "description": "Shop install",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "shopId": {
+                          "type": "string"
+                        },
+                        "shopDomain": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "shopId",
+                        "shopDomain"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/invite/accept": {
+      "post": {
+        "summary": "Accept a team invite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                },
+                "required": [
+                  "token",
+                  "name",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "memberships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shopId": {
+                                "type": "string"
+                              },
+                              "role": {
+                                "type": "string",
+                                "enum": [
+                                  "OWNER",
+                                  "ADMIN",
+                                  "VIEWER"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "shopId",
+                              "role"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "userId",
+                        "email",
+                        "memberships"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/settings": {
+      "get": {
+        "summary": "Read gateway (masked) and matching settings",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "gateway": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
+                            "keyMasked": {
+                              "type": "string"
+                            },
+                            "saltMasked": {
+                              "type": "string"
+                            },
+                            "merchantEmail": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string",
+                              "enum": [
+                                "SANDBOX",
+                                "PRODUCTION"
+                              ]
+                            },
+                            "isActive": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "provider",
+                            "keyMasked",
+                            "saltMasked",
+                            "merchantEmail",
+                            "environment",
+                            "isActive"
+                          ]
+                        },
+                        "matching": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "UDF_ORDER_ID",
+                                "UDF_ORDER_NAME",
+                                "TXNID_ORDER_NAME",
+                                "SHOPIFY_PAYMENT_ID",
+                                "COMPOSITE"
+                              ]
+                            },
+                            "priority": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "fieldMapping": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            },
+                            "amountTolerancePaise": {
+                              "type": "integer"
+                            },
+                            "includeGatewayFees": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "strategy",
+                            "priority",
+                            "fieldMapping",
+                            "amountTolerancePaise",
+                            "includeGatewayFees"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "gateway",
+                        "matching"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update gateway and/or matching settings",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "gateway": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "salt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "merchantEmail": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "environment": {
+                        "type": "string",
+                        "enum": [
+                          "SANDBOX",
+                          "PRODUCTION"
+                        ]
+                      },
+                      "isActive": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "salt",
+                      "merchantEmail",
+                      "environment"
+                    ]
+                  },
+                  "matching": {
+                    "type": "object",
+                    "properties": {
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "UDF_ORDER_ID",
+                          "UDF_ORDER_NAME",
+                          "TXNID_ORDER_NAME",
+                          "SHOPIFY_PAYMENT_ID",
+                          "COMPOSITE"
+                        ]
+                      },
+                      "priority": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "fieldMapping": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "amountTolerancePaise": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "includeGatewayFees": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "strategy",
+                      "priority",
+                      "fieldMapping",
+                      "amountTolerancePaise",
+                      "includeGatewayFees"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "gateway": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
+                            "keyMasked": {
+                              "type": "string"
+                            },
+                            "saltMasked": {
+                              "type": "string"
+                            },
+                            "merchantEmail": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string",
+                              "enum": [
+                                "SANDBOX",
+                                "PRODUCTION"
+                              ]
+                            },
+                            "isActive": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "provider",
+                            "keyMasked",
+                            "saltMasked",
+                            "merchantEmail",
+                            "environment",
+                            "isActive"
+                          ]
+                        },
+                        "matching": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "UDF_ORDER_ID",
+                                "UDF_ORDER_NAME",
+                                "TXNID_ORDER_NAME",
+                                "SHOPIFY_PAYMENT_ID",
+                                "COMPOSITE"
+                              ]
+                            },
+                            "priority": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "fieldMapping": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            },
+                            "amountTolerancePaise": {
+                              "type": "integer"
+                            },
+                            "includeGatewayFees": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "strategy",
+                            "priority",
+                            "fieldMapping",
+                            "amountTolerancePaise",
+                            "includeGatewayFees"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "gateway",
+                        "matching"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/settings/validate": {
+      "post": {
+        "summary": "Validate stored Easebuzz credentials",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "valid": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "webhookUrls": {
+                          "type": "object",
+                          "properties": {
+                            "transaction": {
+                              "type": "string"
+                            },
+                            "payout": {
+                              "type": "string"
+                            },
+                            "refund": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "transaction",
+                            "payout",
+                            "refund"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "valid",
+                        "webhookUrls"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/settings/invite": {
+      "post": {
+        "summary": "Invite a team member",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "ADMIN",
+                      "VIEWER"
+                    ]
+                  }
+                },
+                "required": [
+                  "email",
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invite token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "inviteToken": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "inviteToken"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops": {
+      "get": {
+        "summary": "List shops for the current user",
+        "responses": {
+          "200": {
+            "description": "Shops",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "shopDomain": {
+                            "type": "string"
+                          },
+                          "shopName": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "isActive": {
+                            "type": "boolean"
+                          },
+                          "onboardingStep": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "shopDomain",
+                          "shopName",
+                          "currency",
+                          "isActive",
+                          "onboardingStep"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/payments": {
+      "get": {
+        "summary": "List gateway transactions",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "sortBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "name": "sortOrder",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List gateway transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "easebuzzTxnId": {
+                            "type": "string"
+                          },
+                          "easebuzzPaymentId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "amountPaise": {
+                            "type": "integer"
+                          },
+                          "feesPaise": {
+                            "type": "integer"
+                          },
+                          "netAmountPaise": {
+                            "type": "integer"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "mode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "email": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "phone": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "txnid": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "matchedOrderId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "settlementStatus": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "SETTLED",
+                              "UNSETTLED"
+                            ]
+                          },
+                          "occurredAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "easebuzzTxnId",
+                          "easebuzzPaymentId",
+                          "amountPaise",
+                          "feesPaise",
+                          "netAmountPaise",
+                          "currency",
+                          "status",
+                          "mode",
+                          "email",
+                          "phone",
+                          "txnid",
+                          "matchedOrderId",
+                          "settlementStatus",
+                          "occurredAt"
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "hasMore": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "hasMore"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/settlements": {
+      "get": {
+        "summary": "List settlements",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "sortBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "name": "sortOrder",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List settlements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "payoutId": {
+                            "type": "string"
+                          },
+                          "payoutDate": {
+                            "type": "string"
+                          },
+                          "totalAmountPaise": {
+                            "type": "integer"
+                          },
+                          "transactionCount": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "utrNumber": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "bankAccountLast4": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "payoutId",
+                          "payoutDate",
+                          "totalAmountPaise",
+                          "transactionCount",
+                          "status",
+                          "utrNumber",
+                          "bankAccountLast4"
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "hasMore": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "hasMore"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/refunds": {
+      "get": {
+        "summary": "List refunds",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "sortBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "name": "sortOrder",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List refunds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "refundId": {
+                            "type": "string"
+                          },
+                          "transactionId": {
+                            "type": "string"
+                          },
+                          "amountPaise": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "shopifyRefundId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "processedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "refundId",
+                          "transactionId",
+                          "amountPaise",
+                          "status",
+                          "shopifyRefundId",
+                          "processedAt"
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "hasMore": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "hasMore"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/reconciliation": {
+      "get": {
+        "summary": "List reconciliation records",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "sortBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "name": "sortOrder",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List reconciliation records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "shopifyOrderId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "transactionId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "MATCHED",
+                              "AMOUNT_MISMATCH",
+                              "MISSING_GATEWAY",
+                              "MISSING_SHOPIFY",
+                              "PENDING_SETTLEMENT",
+                              "REFUND_MISMATCH",
+                              "RESOLVED"
+                            ]
+                          },
+                          "expectedAmountPaise": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "actualAmountPaise": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "deltaPaise": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "resolvedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "resolvedByUserId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "shopifyOrderId",
+                          "transactionId",
+                          "status",
+                          "expectedAmountPaise",
+                          "actualAmountPaise",
+                          "deltaPaise",
+                          "reason",
+                          "resolvedAt",
+                          "resolvedByUserId",
+                          "createdAt"
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "hasMore": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "hasMore"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/reconciliation/{id}": {
+      "patch": {
+        "summary": "Mark a reconciliation record resolved",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolved record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "shopifyOrderId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "transactionId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "MATCHED",
+                            "AMOUNT_MISMATCH",
+                            "MISSING_GATEWAY",
+                            "MISSING_SHOPIFY",
+                            "PENDING_SETTLEMENT",
+                            "REFUND_MISMATCH",
+                            "RESOLVED"
+                          ]
+                        },
+                        "expectedAmountPaise": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "actualAmountPaise": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "deltaPaise": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "resolvedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "resolvedByUserId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "shopifyOrderId",
+                        "transactionId",
+                        "status",
+                        "expectedAmountPaise",
+                        "actualAmountPaise",
+                        "deltaPaise",
+                        "reason",
+                        "resolvedAt",
+                        "resolvedByUserId",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/analytics": {
+      "get": {
+        "summary": "Analytics KPIs and daily volume series",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "to": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kpis": {
+                          "type": "object",
+                          "properties": {
+                            "transactionCount": {
+                              "type": "integer"
+                            },
+                            "grossVolumePaise": {
+                              "type": "integer"
+                            },
+                            "feesPaise": {
+                              "type": "integer"
+                            },
+                            "netVolumePaise": {
+                              "type": "integer"
+                            },
+                            "refundCount": {
+                              "type": "integer"
+                            },
+                            "refundTotalPaise": {
+                              "type": "integer"
+                            },
+                            "settlementCount": {
+                              "type": "integer"
+                            },
+                            "settlementTotalPaise": {
+                              "type": "integer"
+                            },
+                            "pendingSettlementPaise": {
+                              "type": "integer"
+                            },
+                            "reconciliation": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "integer"
+                              }
+                            },
+                            "matchRate": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "transactionCount",
+                            "grossVolumePaise",
+                            "feesPaise",
+                            "netVolumePaise",
+                            "refundCount",
+                            "refundTotalPaise",
+                            "settlementCount",
+                            "settlementTotalPaise",
+                            "pendingSettlementPaise",
+                            "reconciliation",
+                            "matchRate"
+                          ]
+                        },
+                        "series": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "grossPaise": {
+                                "type": "integer"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "grossPaise",
+                              "count"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to",
+                        "kpis",
+                        "series"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/{shopId}/reconcile": {
+      "post": {
+        "summary": "Trigger reconciliation (async)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "shopId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "queued": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "queued"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

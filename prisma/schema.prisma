@@ -1,0 +1,353 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum OnboardingStep {
+  INSTALLED
+  CONNECT_GATEWAY
+  COMPLETE
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  VIEWER
+}
+
+enum GatewayProvider {
+  EASEBUZZ
+}
+
+enum GatewayEnvironment {
+  SANDBOX
+  PRODUCTION
+}
+
+enum MatchingStrategy {
+  UDF_ORDER_ID
+  UDF_ORDER_NAME
+  TXNID_ORDER_NAME
+  SHOPIFY_PAYMENT_ID
+  COMPOSITE
+}
+
+enum SettlementStatus {
+  PENDING
+  SETTLED
+  UNSETTLED
+}
+
+enum ReconciliationStatus {
+  MATCHED
+  AMOUNT_MISMATCH
+  MISSING_GATEWAY
+  MISSING_SHOPIFY
+  PENDING_SETTLEMENT
+  REFUND_MISMATCH
+  RESOLVED
+}
+
+enum WebhookSource {
+  SHOPIFY
+  EASEBUZZ
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+// ---------------------------------------------------------------------------
+// Core tenant models
+// ---------------------------------------------------------------------------
+
+model Shop {
+  id             String         @id @default(cuid())
+  shopDomain     String         @unique
+  shopName       String
+  currency       String         @default("INR")
+  timezone       String         @default("Asia/Kolkata")
+  isActive       Boolean        @default(true)
+  installedAt    DateTime       @default(now())
+  uninstalledAt  DateTime?
+  onboardingStep OnboardingStep @default(INSTALLED)
+  planTier       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  session         ShopifySession?
+  members         ShopMember[]
+  gateways        PaymentGateway[]
+  matchingConfig  MatchingConfig?
+  orders          ShopifyOrder[]
+  transactions    GatewayTransaction[]
+  settlements     GatewaySettlement[]
+  refunds         GatewayRefund[]
+  reconciliations ReconciliationRecord[]
+  webhookEvents   WebhookEvent[]
+}
+
+model ShopifySession {
+  id          String    @id @default(cuid())
+  shopId      String    @unique
+  accessToken String
+  scope       String
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships ShopMember[]
+}
+
+model ShopMember {
+  id          String    @id @default(cuid())
+  shopId      String
+  userId      String
+  role        Role      @default(VIEWER)
+  inviteToken String?   @unique
+  invitedAt   DateTime?
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, userId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Gateway configuration
+// ---------------------------------------------------------------------------
+
+model PaymentGateway {
+  id            String             @id @default(cuid())
+  shopId        String
+  provider      GatewayProvider    @default(EASEBUZZ)
+  key           String
+  salt          String
+  merchantEmail String
+  environment   GatewayEnvironment @default(SANDBOX)
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  shop         Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  transactions GatewayTransaction[]
+  settlements  GatewaySettlement[]
+
+  @@index([shopId])
+}
+
+model MatchingConfig {
+  id                   String           @id @default(cuid())
+  shopId               String           @unique
+  strategy             MatchingStrategy @default(COMPOSITE)
+  priority             Json
+  fieldMapping         Json
+  amountTolerancePaise Int              @default(0)
+  includeGatewayFees   Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Domain records
+// ---------------------------------------------------------------------------
+
+model ShopifyOrder {
+  id                  String    @id @default(cuid())
+  shopId              String
+  shopifyOrderId      String
+  orderName           String
+  orderNumber         Int
+  totalPricePaise     Int
+  currency            String    @default("INR")
+  financialStatus     String
+  paymentGatewayNames String[]
+  shopifyPaymentId    String?
+  processedAt         DateTime?
+  rawPayload          Json
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  shop                 Shop                   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  transactions         GatewayTransaction[]
+  reconciliationRecord ReconciliationRecord[]
+
+  @@unique([shopId, shopifyOrderId])
+  @@index([shopId, orderName])
+}
+
+model GatewayTransaction {
+  id                String           @id @default(cuid())
+  shopId            String
+  gatewayId         String
+  easebuzzTxnId     String
+  easebuzzPaymentId String?
+  amountPaise       Int
+  feesPaise         Int              @default(0)
+  netAmountPaise    Int
+  currency          String           @default("INR")
+  status            String
+  mode              String?
+  email             String?
+  phone             String?
+  txnid             String?
+  udf1              String?
+  udf2              String?
+  udf3              String?
+  udf4              String?
+  udf5              String?
+  udf6              String?
+  udf7              String?
+  udf8              String?
+  udf9              String?
+  udf10             String?
+  matchedOrderId    String?
+  settlementStatus  SettlementStatus @default(PENDING)
+  occurredAt        DateTime
+  rawPayload        Json
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  shop            Shop                   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  gateway         PaymentGateway         @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
+  matchedOrder    ShopifyOrder?          @relation(fields: [matchedOrderId], references: [id], onDelete: SetNull)
+  lineItems       SettlementLineItem[]
+  refunds         GatewayRefund[]
+  reconciliations ReconciliationRecord[]
+
+  @@unique([shopId, easebuzzTxnId])
+  @@index([shopId, occurredAt(sort: Desc)])
+  @@index([gatewayId])
+  @@index([matchedOrderId])
+}
+
+model GatewaySettlement {
+  id               String   @id @default(cuid())
+  shopId           String
+  gatewayId        String
+  payoutId         String
+  payoutDate       DateTime
+  totalAmountPaise Int
+  transactionCount Int      @default(0)
+  status           String
+  utrNumber        String?
+  bankAccountLast4 String?
+  rawPayload       Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  shop      Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  gateway   PaymentGateway       @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
+  lineItems SettlementLineItem[]
+
+  @@unique([shopId, payoutId])
+  @@index([shopId, payoutDate(sort: Desc)])
+  @@index([gatewayId])
+}
+
+model SettlementLineItem {
+  id            String   @id @default(cuid())
+  settlementId  String
+  transactionId String
+  grossPaise    Int
+  feesPaise     Int      @default(0)
+  netPaise      Int
+  createdAt     DateTime @default(now())
+
+  settlement  GatewaySettlement  @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  transaction GatewayTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([settlementId])
+  @@index([transactionId])
+}
+
+model GatewayRefund {
+  id              String    @id @default(cuid())
+  shopId          String
+  transactionId   String
+  refundId        String
+  amountPaise     Int
+  status          String
+  shopifyRefundId String?
+  processedAt     DateTime?
+  rawPayload      Json
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  shop        Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  transaction GatewayTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, refundId])
+  @@index([transactionId])
+}
+
+model ReconciliationRecord {
+  id                  String               @id @default(cuid())
+  shopId              String
+  shopifyOrderId      String?
+  transactionId       String?
+  status              ReconciliationStatus
+  expectedAmountPaise Int?
+  actualAmountPaise   Int?
+  deltaPaise          Int?
+  reason              String?
+  resolvedAt          DateTime?
+  resolvedByUserId    String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  shop        Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order       ShopifyOrder?       @relation(fields: [shopifyOrderId], references: [id], onDelete: SetNull)
+  transaction GatewayTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, status])
+  @@index([shopifyOrderId])
+  @@index([transactionId])
+}
+
+model WebhookEvent {
+  id             String        @id @default(cuid())
+  source         WebhookSource
+  eventType      String
+  idempotencyKey String        @unique
+  shopId         String?
+  payload        Json
+  status         WebhookStatus @default(RECEIVED)
+  processedAt    DateTime?
+  error          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  shop Shop? @relation(fields: [shopId], references: [id], onDelete: SetNull)
+
+  @@index([shopId])
+  @@index([status])
+}

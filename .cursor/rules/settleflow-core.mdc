@@ -1,0 +1,31 @@
+---
+description: SettleFlow universal constraints — architecture, milestones, workflow
+alwaysApply: true
+---
+
+# SettleFlow Core Rules
+
+Read the relevant plan before writing code:
+- Backend: `docs/backend-plan.md`
+- Frontend: `docs/frontend-plan.md`
+
+## Non-Negotiable
+
+- Never change architecture unless explicitly approved
+- Never rename folders
+- Never replace libraries
+- Never rewrite existing code unless fixing a bug
+- Always extend the current architecture
+- If unsure, ask instead of assuming
+
+## Milestone Workflow
+
+- Build **one milestone at a time** (B0–B8 backend, then F0–F8 frontend)
+- Stop after deliverable + tests pass; wait for approval before next milestone
+- Exit criteria: write tests → run tests → fix failures → verify deliverable → stop
+
+## Coding Standards
+
+- Max 300 lines/file, 40 lines/function
+- No `any`; no commented-out code
+- `async/await` only; JSDoc on public functions

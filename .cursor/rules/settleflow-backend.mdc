@@ -1,0 +1,37 @@
+---
+description: SettleFlow backend stack, patterns, and constraints
+globs: src/app/api/**,src/lib/**,prisma/**,tests/**,e2e/api/**,openapi/**
+alwaysApply: false
+---
+
+# SettleFlow Backend Rules
+
+Follow `docs/backend-plan.md` exactly.
+
+## Stack (Locked)
+
+Next.js 16 App Router · TypeScript strict · Prisma + Neon PostgreSQL · Inngest · Zod · Pino
+
+- Shopify Admin **GraphQL only**
+- Route Handlers for all API endpoints
+- No frontend UI in backend milestones
+- No MongoDB or non-Prisma ORMs
+
+## Architecture
+
+- **Thin routes** → validate (Zod) → auth → call `lib/services/` → JSON envelope
+- No business logic in routes or Prisma calls in routes
+- Every DB query scoped by `shopId`
+- Money stored as **integer paise**
+- Pino for logging — never `console.log` in production code
+
+## API Envelope
+
+```typescript
+// Success: { success: true, data: T, meta?: PaginationMeta }
+// Error:   { success: false, error: { code, message, details? } }
+```
+
+## Webhooks
+
+Persist → 200 OK → Inngest async. Verify HMAC/hash before DB write.
