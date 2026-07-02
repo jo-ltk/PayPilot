@@ -23,14 +23,14 @@ function NavLogo({ onLogoClick }: { onLogoClick: () => void }) {
     <button
       type="button"
       onClick={onLogoClick}
-      className="group flex min-w-0 shrink cursor-pointer items-center gap-2 select-none sm:gap-2.5"
+      className="group flex min-w-0 shrink-0 cursor-pointer items-center gap-2 select-none sm:gap-2.5"
       aria-label="PayPilot home"
     >
       <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--pp-blue) shadow-[0_6px_18px_-6px_rgba(29,99,242,0.75),inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform duration-300 group-hover:scale-[1.04] sm:h-9 sm:w-9">
         <span className="pp-display text-[13px] font-semibold text-white sm:text-sm">P</span>
         <span className="absolute inset-0 rounded-full bg-linear-to-br from-white/30 via-transparent to-transparent" />
       </span>
-      <span className="pp-display truncate text-base font-medium tracking-tight text-(--pp-ink) sm:text-lg">
+      <span className="pp-display text-base font-medium tracking-tight whitespace-nowrap text-(--pp-ink) sm:text-lg">
         PayPilot
       </span>
     </button>
@@ -54,13 +54,15 @@ function DesktopNavLinks() {
   );
 }
 
-/** Slide-down mobile menu panel. */
-function MobileNavPanel({
+/** Slide-in mobile sidebar drawer. */
+function MobileNavSidebar({
   open,
   onClose,
+  dashboardHref,
 }: {
   open: boolean;
   onClose: () => void;
+  dashboardHref: string;
 }) {
   return (
     <AnimatePresence>
@@ -72,41 +74,69 @@ function MobileNavPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-(--pp-ink)/15 backdrop-blur-sm lg:hidden"
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[60] bg-(--pp-ink)/25 backdrop-blur-[2px] lg:hidden"
             onClick={onClose}
           />
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.97 }}
-            transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
-            className="pp-nav-panel absolute inset-x-0 top-[calc(100%+0.625rem)] z-50 overflow-hidden rounded-2xl p-2 lg:hidden"
+          <motion.aside
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.34, ease: EASE_OUT_EXPO }}
+            className="pp-nav-sidebar fixed inset-y-0 right-0 z-[70] flex w-[min(88vw,19rem)] flex-col border-l lg:hidden"
+            aria-label="Mobile navigation"
           >
-            <div className="flex flex-col gap-0.5">
+            <div className="flex items-center justify-between border-b border-white/50 px-5 py-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-(--pp-blue) text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(29,99,242,0.75)]">
+                  P
+                </span>
+                <span className="pp-display text-base font-medium text-(--pp-ink)">PayPilot</span>
+              </div>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={onClose}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/45 bg-white/35 text-(--pp-ink) shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] transition-colors hover:bg-white/55"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
               {LINKS.map((link, index) => (
                 <motion.a
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
-                  initial={{ opacity: 0, x: -8 }}
+                  initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.04, duration: 0.2 }}
-                  className="rounded-xl px-4 py-3 text-[15px] font-medium text-(--pp-dim) transition-colors hover:bg-white/45 hover:text-(--pp-ink)"
+                  transition={{ delay: index * 0.05, duration: 0.24 }}
+                  className="rounded-xl border-l-2 border-transparent px-4 py-3.5 text-[16px] font-medium text-(--pp-dim) transition-colors hover:border-(--pp-blue) hover:bg-white/50 hover:text-(--pp-ink)"
                 >
                   {link.label}
                 </motion.a>
               ))}
-              <div className="my-1 h-px bg-white/50" />
+            </nav>
+
+            <div className="space-y-2 border-t border-white/50 p-4">
               <Link
                 href="/login"
                 onClick={onClose}
-                className="rounded-xl px-4 py-3 text-[15px] font-medium text-(--pp-dim) transition-colors hover:bg-white/45 hover:text-(--pp-ink)"
+                className="flex h-11 items-center justify-center rounded-xl border border-white/50 bg-white/30 text-[15px] font-medium text-(--pp-ink) transition-colors hover:bg-white/50"
               >
                 Sign in
               </Link>
+              <Link
+                href={dashboardHref}
+                onClick={onClose}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-(--pp-blue)/95 px-4 text-[15px] font-medium whitespace-nowrap text-white shadow-[0_10px_24px_-10px_rgba(29,99,242,0.7),inset_0_1px_0_rgba(255,255,255,0.2)]"
+              >
+                Get started
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-          </motion.div>
+          </motion.aside>
         </>
       ) : null}
     </AnimatePresence>
@@ -169,12 +199,12 @@ export function LandingNav({ dashboardHref }: { dashboardHref: string }) {
           className="pointer-events-none absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-white/90 to-transparent"
         />
 
-        <div className="relative z-10 flex w-full items-center justify-between gap-3">
+        <div className="relative z-10 flex w-full min-w-0 items-center justify-between gap-2 sm:gap-3">
           <NavLogo onLogoClick={handleLogoClick} />
 
           <DesktopNavLinks />
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
             <Link
               href="/login"
               className="hidden rounded-full px-3 py-1.5 text-[13px] font-medium text-(--pp-dim) transition-all duration-200 hover:bg-white/40 hover:text-(--pp-ink) hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] md:block"
@@ -182,24 +212,17 @@ export function LandingNav({ dashboardHref }: { dashboardHref: string }) {
               Sign in
             </Link>
 
-            <Magnetic strength={0.35} className="hidden sm:block">
+            <Magnetic strength={0.35} className="hidden sm:inline-block">
               <Link
                 href={dashboardHref}
-                className="group inline-flex h-9 items-center gap-2 rounded-full bg-(--pp-blue)/95 px-4 text-[13px] font-medium text-white shadow-[0_10px_28px_-10px_rgba(29,99,242,0.75),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-sm transition-all duration-300 hover:bg-(--pp-blue-deep) hover:shadow-[0_14px_36px_-10px_rgba(29,99,242,0.9),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                className="group inline-flex h-9 items-center gap-2 rounded-full bg-(--pp-blue)/95 px-4 text-[13px] font-medium whitespace-nowrap text-white shadow-[0_10px_28px_-10px_rgba(29,99,242,0.75),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-sm transition-all duration-300 hover:bg-(--pp-blue-deep) hover:shadow-[0_14px_36px_-10px_rgba(29,99,242,0.9),inset_0_1px_0_rgba(255,255,255,0.3)]"
               >
                 Get started
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/20">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/20">
                   <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </span>
               </Link>
             </Magnetic>
-
-            <Link
-              href={dashboardHref}
-              className="inline-flex h-9 items-center rounded-full bg-(--pp-blue)/95 px-4 text-[13px] font-medium text-white shadow-[0_10px_24px_-10px_rgba(29,99,242,0.7),inset_0_1px_0_rgba(255,255,255,0.2)] sm:hidden"
-            >
-              Start
-            </Link>
 
             <button
               type="button"
@@ -212,9 +235,13 @@ export function LandingNav({ dashboardHref }: { dashboardHref: string }) {
             </button>
           </div>
         </div>
-
-        <MobileNavPanel open={menuOpen} onClose={() => setMenuOpen(false)} />
       </motion.div>
+
+      <MobileNavSidebar
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        dashboardHref={dashboardHref}
+      />
     </header>
   );
 }

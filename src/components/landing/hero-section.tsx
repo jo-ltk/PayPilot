@@ -55,7 +55,6 @@ export function HeroSection({ dashboardHref }: { dashboardHref: string }) {
                 sizes="100vw"
                 className="object-cover object-[72%_bottom] sm:object-[68%_bottom]"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-(--pp-surface)" />
             </div>
           </div>
 

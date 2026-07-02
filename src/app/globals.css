@@ -696,6 +696,16 @@ html:has(.pp-landing) {
     0 24px 56px -20px rgba(22, 35, 60, 0.28);
 }
 
+.pp-nav-sidebar {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(32px) saturate(195%);
+  -webkit-backdrop-filter: blur(32px) saturate(195%);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.75),
+    -16px 0 48px -12px rgba(22, 35, 60, 0.22);
+}
+
 .pp-dotgrid {
   background-image: radial-gradient(rgba(29, 99, 242, 0.14) 1px, transparent 1px);
   background-size: 28px 28px;

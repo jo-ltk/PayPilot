@@ -90,8 +90,8 @@ export function Magnetic({
 
   return (
     <motion.div
-      className={className}
-      style={{ x: springX, y: springY, display: "inline-block" }}
+      className={className ?? "inline-block"}
+      style={{ x: springX, y: springY }}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
     >
