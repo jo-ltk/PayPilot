@@ -20,6 +20,8 @@ interface DateRangePickerProps {
   placeholder?: string;
   /** "chip" mirrors the sidebar's icon-chip nav style; "default" is a plain outline trigger. */
   variant?: "default" | "chip";
+  /** Icon-only circle trigger for compact mobile toolbars. */
+  iconOnly?: boolean;
 }
 
 function formatRangeLabel(range: DateRange): string {
@@ -39,9 +41,11 @@ export function DateRangePicker({
   className,
   placeholder = "Select dates",
   variant = "default",
+  iconOnly = false,
 }: DateRangePickerProps) {
   const label = value.from || value.to ? formatRangeLabel(value) : placeholder;
   const isChip = variant === "chip";
+  const hasRange = Boolean(value.from || value.to);
 
   return (
     <Popover>
@@ -53,26 +57,41 @@ export function DateRangePicker({
               "w-full justify-start font-normal sm:w-[260px]",
               !value.from && "text-muted-foreground",
               isChip &&
-                "retro-pill size-10 justify-center border-transparent p-0 sm:h-11 sm:w-auto sm:justify-start sm:gap-2.5 sm:pl-1.5 sm:pr-3",
+                iconOnly &&
+                "size-10 w-10 min-w-10 justify-center rounded-full border-transparent p-0 shadow-none",
+              isChip &&
+                !iconOnly &&
+                "retro-pill h-11 w-auto justify-start gap-2.5 border-transparent pl-1.5 pr-3",
               className,
             )}
           />
         }
       >
         {isChip ? (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-blue)] text-[var(--retro-chart-strong)]">
+          <span
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-full bg-[var(--retro-blue)] text-[var(--retro-chart-strong)] shadow-[0_0_0_1px_var(--retro-ink)] transition-shadow",
+              iconOnly ? "size-10" : "size-8 rounded-xl",
+              hasRange &&
+                iconOnly &&
+                "shadow-[0_0_0_2px_var(--retro-chart-strong)]",
+            )}
+          >
             <CalendarIcon aria-hidden="true" className="size-4" />
           </span>
         ) : (
           <CalendarIcon aria-hidden="true" className="size-4" />
         )}
-        <span
-          className={cn(
-            isChip && "hidden font-retro text-sm font-medium text-foreground sm:inline",
-          )}
-        >
-          {label}
-        </span>
+        {!(isChip && iconOnly) ? (
+          <span
+            className={cn(
+              isChip &&
+                "hidden font-retro text-sm font-medium text-foreground sm:inline",
+            )}
+          >
+            {label}
+          </span>
+        ) : null}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

@@ -17,13 +17,19 @@ import { cn } from "@/lib/utils";
 interface DataTableColumnVisibilityProps<TData> {
   table: Table<TData>;
   className?: string;
+  showLabel?: boolean;
+  mobileLabel?: string;
 }
 
 /** Dropdown to toggle visible table columns. */
 export function DataTableColumnVisibility<TData>({
   table,
   className,
+  showLabel = true,
+  mobileLabel,
 }: DataTableColumnVisibilityProps<TData>) {
+  const isCompact = !showLabel && mobileLabel;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -36,8 +42,21 @@ export function DataTableColumnVisibility<TData>({
           />
         }
       >
-        <Settings2 aria-hidden="true" className="size-4" />
-        Columns
+        {isCompact ? (
+          <>
+            <span className="flex size-9 items-center justify-center rounded-xl bg-[var(--retro-blue)] text-[var(--retro-chart-strong)]">
+              <Settings2 aria-hidden="true" className="size-4" />
+            </span>
+            <span className="text-[0.65rem] font-semibold tracking-wide text-foreground/70 uppercase">
+              {mobileLabel}
+            </span>
+          </>
+        ) : (
+          <>
+            <Settings2 aria-hidden="true" className="size-4" />
+            {showLabel ? "Columns" : null}
+          </>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>

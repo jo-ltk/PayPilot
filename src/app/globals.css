@@ -279,3 +279,148 @@
 .retro-pill:hover {
   background: var(--secondary);
 }
+
+/* Shared retro panel — toolbar, table, skeletons. */
+.retro-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--retro-ink);
+  background: var(--card);
+  box-shadow: 0 8px 24px -18px rgb(29 99 242 / 0.35);
+}
+
+/* Transactions page — search, filters, table, and pagination. */
+.retro-dash .retro-search input {
+  border-radius: 9999px;
+  border-color: var(--retro-ink);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--retro-ink);
+  padding-left: 2.25rem;
+  padding-right: 2.25rem;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.retro-dash .retro-search input:focus-visible {
+  box-shadow:
+    0 0 0 1px var(--retro-ink),
+    0 0 0 3px color-mix(in oklch, var(--ring) 25%, transparent);
+}
+
+.retro-dash .retro-status-filter [data-slot="select-trigger"] {
+  border-radius: 9999px;
+  border-color: var(--retro-ink);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--retro-ink);
+}
+
+.retro-dash .retro-mobile-filter-row .retro-search input {
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.retro-dash .retro-mobile-filter-row .retro-status-filter [data-slot="select-trigger"] {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.retro-dash .retro-desktop-toolbar .retro-search input,
+.retro-dash .retro-desktop-toolbar .retro-status-filter [data-slot="select-trigger"],
+.retro-dash .retro-desktop-toolbar button[data-slot="button"] {
+  height: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.retro-dash .retro-desktop-toolbar .retro-status-filter [data-slot="select-trigger"] {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.retro-dash .retro-data-table {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.retro-dash .retro-data-table [data-slot="table-header"] {
+  background: color-mix(in oklch, var(--secondary) 50%, var(--card));
+}
+
+.retro-dash .retro-data-table thead[data-slot="table-header"] {
+  --tw-bg-opacity: 1;
+  background-color: color-mix(in oklch, var(--secondary) 50%, var(--card));
+}
+
+.retro-dash .retro-data-table [data-slot="table-head"] {
+  height: 2.75rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-family: var(--font-poppins), var(--font-geist-sans), Arial, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+
+.retro-dash .retro-data-table [data-slot="table-head"]:first-child {
+  padding-left: 0.75rem;
+}
+
+.retro-dash .retro-data-table [data-slot="table-head"]:last-child {
+  padding-right: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .retro-dash .retro-data-table [data-slot="table-head"]:first-child,
+  .retro-dash .retro-data-table [data-slot="table-cell"]:first-child {
+    padding-left: 1rem;
+  }
+
+  .retro-dash .retro-data-table [data-slot="table-head"]:last-child,
+  .retro-dash .retro-data-table [data-slot="table-cell"]:last-child {
+    padding-right: 1rem;
+  }
+}
+
+.retro-dash .retro-data-table [data-slot="table-row"] {
+  border-color: color-mix(in oklch, var(--retro-ink) 70%, transparent);
+  transition: background-color 150ms ease;
+}
+
+.retro-dash .retro-data-table [data-slot="table-row"]:hover {
+  background: color-mix(in oklch, var(--secondary) 70%, var(--card));
+}
+
+.retro-dash .retro-data-table [data-slot="table-row"]:last-child {
+  border-bottom: 0;
+}
+
+.retro-dash .retro-data-table [data-slot="table-cell"] {
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.retro-dash .retro-table-skeleton {
+  border-color: var(--retro-ink);
+}
+
+.retro-dash .retro-pagination [data-slot="pagination-link"],
+.retro-dash .retro-pagination button {
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px var(--retro-ink);
+}
+
+.retro-dash .retro-pagination [data-slot="pagination-link"]:hover,
+.retro-dash .retro-pagination button:hover:not(:disabled) {
+  background: var(--secondary);
+}

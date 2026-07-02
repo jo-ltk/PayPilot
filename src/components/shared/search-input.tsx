@@ -11,6 +11,7 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
   "aria-label"?: string;
 }
 
@@ -20,6 +21,7 @@ export function SearchInput({
   onChange,
   placeholder = "Search…",
   className,
+  inputClassName,
   "aria-label": ariaLabel = "Search",
 }: SearchInputProps) {
   return (
@@ -34,7 +36,7 @@ export function SearchInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="pr-9 pl-9"
+        className={cn("pr-9 pl-9", inputClassName)}
       />
       {value ? (
         <Button

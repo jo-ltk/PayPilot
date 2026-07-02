@@ -48,7 +48,9 @@ describe("TransactionsPage", () => {
       expect(screen.getByText("ORD-1001")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Transactions")).toBeInTheDocument();
+    expect(
+      screen.getByText("Every payment, tracked and searchable"),
+    ).toBeInTheDocument();
     expect(screen.getByText("EZ-TXN-001")).toBeInTheDocument();
     expect(screen.getByText("Success")).toBeInTheDocument();
   });

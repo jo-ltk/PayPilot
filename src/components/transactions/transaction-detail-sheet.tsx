@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Scale } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import type { ReactNode } from "react";
 
 import { DetailField } from "@/components/shared/detail-field";
 import { CurrencyDisplay } from "@/components/shared/currency-display";
@@ -24,6 +25,7 @@ import {
   formatStatusLabel,
   getPaymentStatusVariant,
 } from "@/lib/payment-status";
+import { cn } from "@/lib/utils";
 import type { TransactionView } from "@/schemas/payments.schema";
 import type { AppMode } from "@/hooks/use-shop-context";
 
@@ -34,6 +36,59 @@ interface TransactionDetailSheetProps {
   mode: AppMode;
   shopId: string | null;
   onRefresh?: () => void;
+}
+
+interface DetailSheetActionProps {
+  label: string;
+  chipClassName: string;
+  children: ReactNode;
+  onClick?: () => void;
+  href?: string;
+  disabled?: boolean;
+  ariaLabel?: string;
+}
+
+function DetailSheetAction({
+  label,
+  chipClassName,
+  children,
+  onClick,
+  href,
+  disabled,
+  ariaLabel,
+}: DetailSheetActionProps) {
+  const button = (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={disabled}
+      aria-label={ariaLabel ?? label}
+      onClick={onClick}
+      className="retro-pill h-11 w-full gap-2.5 border-transparent pl-1.5 pr-3"
+    >
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-xl text-[var(--retro-chart-strong)]",
+          chipClassName,
+        )}
+      >
+        {children}
+      </span>
+      <span className="truncate font-retro text-sm font-medium text-foreground">
+        {label}
+      </span>
+    </Button>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="block w-full min-w-0">
+        {button}
+      </Link>
+    );
+  }
+
+  return button;
 }
 
 function exportTransactionRow(transaction: TransactionView): void {
@@ -155,26 +210,33 @@ export function TransactionDetailSheet({
                 value={formatDate(transaction.occurredAt, "dd MMM yyyy, HH:mm:ss")}
               />
             </dl>
-            <SheetFooter className="flex-row flex-wrap gap-2">
-              {onRefresh ? (
-                <Button type="button" variant="outline" onClick={onRefresh}>
-                  <RefreshCw aria-hidden="true" className="size-4" />
-                  Refresh
-                </Button>
-              ) : null}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => exportTransactionRow(transaction)}
-              >
-                <Download aria-hidden="true" className="size-4" />
-                Export CSV
-              </Button>
-              <Link href={reconciliationHref}>
-                <Button type="button" variant="outline">
-                  View reconciliation
-                </Button>
-              </Link>
+            <SheetFooter className="border-t border-[var(--retro-ink)]/60 px-4 pt-4">
+              <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+                {onRefresh ? (
+                  <DetailSheetAction
+                    label="Refresh"
+                    chipClassName="bg-[var(--retro-mint)]"
+                    ariaLabel="Refresh transaction"
+                    onClick={onRefresh}
+                  >
+                    <RefreshCw aria-hidden="true" className="size-4" />
+                  </DetailSheetAction>
+                ) : null}
+                <DetailSheetAction
+                  label="Export CSV"
+                  chipClassName="bg-[var(--retro-pink)]"
+                  onClick={() => exportTransactionRow(transaction)}
+                >
+                  <Download aria-hidden="true" className="size-4" />
+                </DetailSheetAction>
+                <DetailSheetAction
+                  label="Reconcile"
+                  chipClassName="bg-[var(--retro-blue)]"
+                  href={reconciliationHref}
+                >
+                  <Scale aria-hidden="true" className="size-4" />
+                </DetailSheetAction>
+              </div>
             </SheetFooter>
           </motion.div>
         ) : null}
