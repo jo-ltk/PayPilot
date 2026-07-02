@@ -12,9 +12,44 @@ config({ path: resolve(process.cwd(), ".env") });
 
 const prisma = new PrismaClient();
 
+const BATCH_SIZE = 100;
+
 /**
- * Seeds the database with a single demo shop and one record per table so
- * Prisma Studio shows fully linked sample data.
+ * Deletes prior transactional demo data so re-seeding stays idempotent.
+ * @param shopId - Demo shop id
+ */
+async function clearShopTransactionalData(shopId: string): Promise<void> {
+  await prisma.$transaction([
+    prisma.webhookEvent.deleteMany({ where: { shopId } }),
+    prisma.reconciliationRecord.deleteMany({ where: { shopId } }),
+    prisma.gatewaySettlement.deleteMany({ where: { shopId } }),
+    prisma.gatewayTransaction.deleteMany({ where: { shopId } }),
+    prisma.shopifyOrder.deleteMany({ where: { shopId } }),
+  ]);
+}
+
+/**
+ * Inserts rows in batches to avoid oversized SQL statements.
+ * @param label - Log label for the entity type
+ * @param rows - Records to insert
+ * @param insert - Prisma createMany delegate
+ */
+async function insertBatched<T extends Record<string, unknown>>(
+  label: string,
+  rows: T[],
+  insert: (batch: T[]) => Promise<{ count: number }>,
+): Promise<void> {
+  for (let offset = 0; offset < rows.length; offset += BATCH_SIZE) {
+    const batch = rows.slice(offset, offset + BATCH_SIZE);
+    const { count } = await insert(batch);
+    if (count !== batch.length) {
+      throw new Error(`Failed to insert full ${label} batch at offset ${offset}`);
+    }
+  }
+}
+
+/**
+ * Seeds the database with a rich demo shop and hundreds of linked records.
  */
 async function main(): Promise<void> {
   const data = buildSeedData();
@@ -54,49 +89,36 @@ async function main(): Promise<void> {
     create: data.matchingConfig,
   });
 
-  await prisma.shopifyOrder.upsert({
-    where: { id: data.order.id },
-    update: data.order,
-    create: data.order,
-  });
+  await clearShopTransactionalData(data.shop.id);
 
-  await prisma.gatewayTransaction.upsert({
-    where: { id: data.transaction.id },
-    update: data.transaction,
-    create: data.transaction,
-  });
-
-  await prisma.gatewaySettlement.upsert({
-    where: { id: data.settlement.id },
-    update: data.settlement,
-    create: data.settlement,
-  });
-
-  await prisma.settlementLineItem.upsert({
-    where: { id: data.lineItem.id },
-    update: data.lineItem,
-    create: data.lineItem,
-  });
-
-  await prisma.gatewayRefund.upsert({
-    where: { id: data.refund.id },
-    update: data.refund,
-    create: data.refund,
-  });
-
-  await prisma.reconciliationRecord.upsert({
-    where: { id: data.reconciliation.id },
-    update: data.reconciliation,
-    create: data.reconciliation,
-  });
-
-  await prisma.webhookEvent.upsert({
-    where: { id: data.webhookEvent.id },
-    update: data.webhookEvent,
-    create: data.webhookEvent,
-  });
+  await insertBatched("orders", data.orders, (batch) =>
+    prisma.shopifyOrder.createMany({ data: batch }),
+  );
+  await insertBatched("transactions", data.transactions, (batch) =>
+    prisma.gatewayTransaction.createMany({ data: batch }),
+  );
+  await insertBatched("settlements", data.settlements, (batch) =>
+    prisma.gatewaySettlement.createMany({ data: batch }),
+  );
+  await insertBatched("line items", data.lineItems, (batch) =>
+    prisma.settlementLineItem.createMany({ data: batch }),
+  );
+  await insertBatched("refunds", data.refunds, (batch) =>
+    prisma.gatewayRefund.createMany({ data: batch }),
+  );
+  await insertBatched("reconciliations", data.reconciliations, (batch) =>
+    prisma.reconciliationRecord.createMany({ data: batch }),
+  );
+  await insertBatched("webhook events", data.webhookEvents, (batch) =>
+    prisma.webhookEvent.createMany({ data: batch }),
+  );
 
   console.log(`Seeded demo shop ${data.shop.shopDomain}`);
+  console.log(
+    `  ${data.meta.transactionCount} transactions, ${data.meta.orderCount} orders, ` +
+      `${data.meta.settlementCount} settlements, ${data.meta.refundCount} refunds, ` +
+      `${data.meta.reconciliationCount} reconciliations`,
+  );
 }
 
 main()

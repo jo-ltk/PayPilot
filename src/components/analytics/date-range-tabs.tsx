@@ -14,13 +14,18 @@ import type { DateRange } from "@/types/common";
 interface DateRangeTabsProps {
   value: DateRange;
   onChange: (range: DateRange) => void;
+  className?: string;
 }
 
 /**
  * Preset date range tabs with optional custom picker.
  * @param props - Current range and change handler
  */
-export function DateRangeTabs({ value, onChange }: DateRangeTabsProps) {
+export function DateRangeTabs({
+  value,
+  onChange,
+  className,
+}: DateRangeTabsProps) {
   const activePreset = detectAnalyticsPreset(value);
 
   const handlePresetChange = (preset: string) => {
@@ -34,14 +39,23 @@ export function DateRangeTabs({ value, onChange }: DateRangeTabsProps) {
   };
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      <Tabs value={activePreset} onValueChange={handlePresetChange} className="w-full min-w-0">
+    <div
+      className={cn(
+        "flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center",
+        className,
+      )}
+    >
+      <Tabs
+        value={activePreset}
+        onValueChange={handlePresetChange}
+        className="w-full min-w-0 sm:w-auto"
+      >
         <TabsList
           variant="default"
           className={cn(
             "retro-analytics-tabs h-auto w-full gap-2 rounded-none bg-transparent p-0",
             "group-data-horizontal/tabs:h-auto",
-            "grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap",
+            "grid grid-cols-2 sm:flex sm:w-auto sm:flex-row sm:flex-wrap",
           )}
         >
           {ANALYTICS_RANGE_PRESETS.map((preset) => (

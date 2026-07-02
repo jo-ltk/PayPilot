@@ -104,7 +104,11 @@ export function AnalyticsToolbar({
       </div>
 
       <div className="retro-desktop-toolbar hidden flex-wrap items-center gap-2 sm:flex">
-        <DateRangeTabs value={dateRange} onChange={onDateRangeChange} />
+        <DateRangeTabs
+          value={dateRange}
+          onChange={onDateRangeChange}
+          className="shrink-0"
+        />
         <Button
           type="button"
           variant="outline"
