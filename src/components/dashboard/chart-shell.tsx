@@ -61,7 +61,7 @@ export function ChartShell({
         </div>
         {hasTable && !isLoading && !isError && !isEmpty ? (
           <div
-            className="flex shrink-0 items-center gap-1 rounded-full border border-foreground/15 p-1"
+            className="retro-pill flex shrink-0 items-center gap-1 p-1"
             role="group"
             aria-label="Chart view mode"
           >

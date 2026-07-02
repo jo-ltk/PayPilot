@@ -1,12 +1,11 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/layout/page-header";
 import { ErrorState } from "@/components/shared/error-state";
-import { PageTransition } from "@/components/shared/page-transition";
 import { ServerDataTablePagination } from "@/components/shared/server-data-table-pagination";
 import { SettlementDetailSheet } from "@/components/settlements/settlement-detail-sheet";
 import { useSettlementColumns } from "@/components/settlements/settlement-columns";
@@ -16,10 +15,25 @@ import { useListFilters } from "@/hooks/use-list-filters";
 import { useServerDataTable } from "@/hooks/use-server-data-table";
 import { useSettlements } from "@/hooks/use-settlements";
 import { useShopContext } from "@/hooks/use-shop-context";
+import { filterToolbarVariants, reducedMotionTransition } from "@/lib/animations";
 import { buildCsv, downloadCsv } from "@/lib/export-csv";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { formatStatusLabel } from "@/lib/payment-status";
 import type { SettlementView } from "@/schemas/payments.schema";
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
+}
 
 function filterSettlementRows(
   rows: SettlementView[],
@@ -53,6 +67,7 @@ export function SettlementsPage() {
     resetFilters,
   } = useListFilters({ sortBy: "payoutDate" });
   const settlements = useSettlements(shopId, apiParams);
+  const prefersReducedMotion = useReducedMotion();
   const [selected, setSelected] = useState<SettlementView | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -126,11 +141,18 @@ export function SettlementsPage() {
   }, []);
 
   return (
-    <PageTransition className="space-y-6">
-      <PageHeader
-        title="Settlements"
-        description="Track payout batches and settlement status."
-      />
+    <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <header className="max-w-4xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          {getGreeting()}
+        </p>
+        <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          Every payout, tracked and clear
+        </h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Track payout batches and settlement status.
+        </p>
+      </header>
 
       <SettlementsToolbar
         search={filters.search}
@@ -157,7 +179,20 @@ export function SettlementsPage() {
             onResetFilters={resetFilters}
           />
           {rows.length > 0 ? (
-            <ServerDataTablePagination meta={meta} onPageChange={setPage} />
+            <motion.div
+              variants={filterToolbarVariants}
+              initial="hidden"
+              animate="visible"
+              transition={
+                prefersReducedMotion ? reducedMotionTransition : undefined
+              }
+            >
+              <ServerDataTablePagination
+                meta={meta}
+                onPageChange={setPage}
+                className="retro-pagination px-3 sm:px-4"
+              />
+            </motion.div>
           ) : null}
         </>
       )}
@@ -170,6 +205,6 @@ export function SettlementsPage() {
         shopId={shopId}
         onRefresh={refresh}
       />
-    </PageTransition>
+    </div>
   );
 }

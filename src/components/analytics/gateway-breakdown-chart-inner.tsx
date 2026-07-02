@@ -75,7 +75,7 @@ export const GatewayBreakdownChartInner = memo(
             />
             <Bar
               dataKey="volumePaise"
-              fill="var(--foreground)"
+              fill="var(--retro-chart-strong, var(--foreground))"
               radius={[0, 4, 4, 0]}
               maxBarSize={24}
             />

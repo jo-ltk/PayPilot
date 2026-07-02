@@ -280,6 +280,24 @@
   background: var(--secondary);
 }
 
+.retro-primary-pill {
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.retro-primary-pill:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--primary) 90%, white);
+}
+
+.retro-primary-pill:disabled {
+  background: var(--secondary);
+  color: var(--foreground);
+  box-shadow: 0 0 0 1px var(--retro-ink);
+  opacity: 1;
+}
+
 /* Shared retro panel — toolbar, table, skeletons. */
 .retro-panel {
   border-radius: 1.5rem;
@@ -423,4 +441,123 @@
 .retro-dash .retro-pagination [data-slot="pagination-link"]:hover,
 .retro-dash .retro-pagination button:hover:not(:disabled) {
   background: var(--secondary);
+}
+
+/* Analytics — date preset tab grid on mobile */
+.retro-dash .retro-analytics-tabs {
+  background: transparent;
+  padding: 0;
+  height: auto !important;
+  overflow: visible;
+}
+
+.retro-dash .retro-analytics-tabs [data-slot="tabs-trigger"] {
+  flex-shrink: 0;
+}
+
+/* Settings — tab navigation pills */
+.retro-dash .retro-settings-tabs {
+  background: transparent;
+  padding: 0;
+  height: auto !important;
+  overflow: visible;
+}
+
+.retro-dash .retro-settings-tab {
+  position: relative;
+  flex-shrink: 0;
+  height: auto;
+  min-height: 2.75rem;
+  border-radius: 9999px;
+  border: transparent;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--retro-ink);
+  color: color-mix(in oklch, var(--foreground) 70%, transparent);
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+
+.retro-dash .retro-settings-tab::after {
+  display: none !important;
+  content: none !important;
+}
+
+.retro-dash .retro-settings-tab:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+.retro-dash .retro-settings-tab[data-active] {
+  background: var(--retro-chip);
+  color: var(--retro-chip-foreground);
+  box-shadow: 0 0 0 1px var(--retro-chart-strong);
+}
+
+/* Settings — form fields inside cards */
+.retro-dash [data-slot="card"] input:not([type="checkbox"]),
+.retro-dash [data-slot="card"] [data-slot="select-trigger"],
+.retro-dash .retro-subpanel input {
+  border-radius: 1rem;
+  border-color: var(--retro-ink);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--retro-ink);
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.retro-dash [data-slot="card"] input:not([type="checkbox"]):focus-visible,
+.retro-dash [data-slot="card"] [data-slot="select-trigger"]:focus-visible,
+.retro-dash .retro-subpanel input:focus-visible {
+  box-shadow:
+    0 0 0 1px var(--retro-ink),
+    0 0 0 3px color-mix(in oklch, var(--ring) 25%, transparent);
+}
+
+.retro-dash [data-slot="card-footer"] {
+  border-top: 1px solid color-mix(in oklch, var(--retro-ink) 70%, transparent);
+}
+
+/* Settings — nested sub-panels (webhooks, matching groups) */
+.retro-subpanel {
+  border-radius: 1.25rem;
+  border: 1px solid var(--retro-ink);
+  background: color-mix(in oklch, var(--secondary) 45%, var(--card));
+}
+
+/* Settings — metadata rows */
+.retro-info-row {
+  border-color: color-mix(in oklch, var(--retro-ink) 70%, transparent);
+}
+
+/* Settings — session detail rows */
+.retro-session-row {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in oklch, var(--retro-ink) 60%, transparent);
+  background: color-mix(in oklch, var(--secondary) 35%, var(--card));
+  padding: 0.75rem 1rem;
+}
+
+/* Settings — team table inside cards */
+.retro-dash .retro-settings-table [data-slot="table-header"] {
+  background: color-mix(in oklch, var(--secondary) 55%, var(--card));
+}
+
+.retro-dash .retro-settings-table [data-slot="table-head"] {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+
+.retro-dash .retro-settings-table [data-slot="table-row"] {
+  border-color: color-mix(in oklch, var(--retro-ink) 70%, transparent);
+  transition: background-color 150ms ease;
+}
+
+.retro-dash .retro-settings-table [data-slot="table-row"]:hover {
+  background: color-mix(in oklch, var(--secondary) 50%, transparent);
 }

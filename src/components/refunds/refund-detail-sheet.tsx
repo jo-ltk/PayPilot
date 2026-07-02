@@ -2,6 +2,7 @@
 
 import { RefreshCw } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import type { ReactNode } from "react";
 
 import { CurrencyDisplay } from "@/components/shared/currency-display";
 import { DetailField } from "@/components/shared/detail-field";
@@ -21,6 +22,7 @@ import {
   formatStatusLabel,
   getPaymentStatusVariant,
 } from "@/lib/payment-status";
+import { cn } from "@/lib/utils";
 import type { RefundView } from "@/schemas/payments.schema";
 
 interface RefundDetailSheetProps {
@@ -28,6 +30,47 @@ interface RefundDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRefresh?: () => void;
+}
+
+interface DetailSheetActionProps {
+  label: string;
+  chipClassName: string;
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  ariaLabel?: string;
+}
+
+function DetailSheetAction({
+  label,
+  chipClassName,
+  children,
+  onClick,
+  disabled,
+  ariaLabel,
+}: DetailSheetActionProps) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={disabled}
+      aria-label={ariaLabel ?? label}
+      onClick={onClick}
+      className="retro-pill h-11 w-full gap-2.5 border-transparent pl-1.5 pr-3"
+    >
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-xl text-[var(--retro-chart-strong)]",
+          chipClassName,
+        )}
+      >
+        {children}
+      </span>
+      <span className="truncate font-retro text-sm font-medium text-foreground">
+        {label}
+      </span>
+    </Button>
+  );
 }
 
 /** Side drawer showing full refund details and settlement impact. */
@@ -44,7 +87,7 @@ export function RefundDetailSheet({
       <SheetContent className="w-full overflow-y-auto sm:max-w-md">
         {refund ? (
           <motion.div
-            className="flex h-full flex-col gap-6"
+            className="flex h-full flex-col"
             variants={drawerContentVariants}
             initial="hidden"
             animate="visible"
@@ -124,14 +167,18 @@ export function RefundDetailSheet({
               </section>
             </dl>
 
-            <SheetFooter>
-              {onRefresh ? (
-                <Button type="button" variant="outline" onClick={onRefresh}>
+            {onRefresh ? (
+              <SheetFooter className="border-t border-[var(--retro-ink)]/60 px-4 pt-4">
+                <DetailSheetAction
+                  label="Refresh"
+                  chipClassName="bg-[var(--retro-mint)]"
+                  ariaLabel="Refresh refund"
+                  onClick={onRefresh}
+                >
                   <RefreshCw aria-hidden="true" className="size-4" />
-                  Refresh
-                </Button>
-              ) : null}
-            </SheetFooter>
+                </DetailSheetAction>
+              </SheetFooter>
+            ) : null}
           </motion.div>
         ) : null}
       </SheetContent>

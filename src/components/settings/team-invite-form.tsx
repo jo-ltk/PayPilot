@@ -101,6 +101,7 @@ export function TeamInviteForm({
         <div className="flex items-end">
           <Button
             type="submit"
+            className="h-11 rounded-full px-5"
             disabled={disabled || inviteMutation.isPending}
           >
             {inviteMutation.isPending ? (

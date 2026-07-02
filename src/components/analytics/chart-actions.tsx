@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { downloadChartPng } from "@/lib/export-png";
+import { cn } from "@/lib/utils";
 
 interface ChartActionsProps {
   chartRef: React.RefObject<HTMLElement | null>;
@@ -19,10 +20,49 @@ interface ChartActionsProps {
   onFullscreen: () => void;
 }
 
+interface ChartActionButtonProps {
+  label: string;
+  chipClassName: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+function ChartActionButton({
+  label,
+  chipClassName,
+  onClick,
+  children,
+}: ChartActionButtonProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            className="retro-pill size-10 border-transparent p-0"
+            aria-label={label}
+            onClick={onClick}
+          />
+        }
+      >
+        <span
+          className={cn(
+            "flex size-8 items-center justify-center rounded-xl text-[var(--retro-chart-strong)]",
+            chipClassName,
+          )}
+        >
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 /** Icon toolbar for chart export and fullscreen actions. */
 export function ChartActions({
   chartRef,
-  csvFilename,
   pngFilename,
   onExportCsv,
   onFullscreen,
@@ -40,55 +80,28 @@ export function ChartActions({
   }, [chartRef, pngFilename]);
 
   return (
-    <div className="flex items-center gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Export ${csvFilename} as CSV`}
-              onClick={onExportCsv}
-            />
-          }
-        >
-          <FileSpreadsheet aria-hidden="true" className="size-4" />
-        </TooltipTrigger>
-        <TooltipContent>Export CSV</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Export ${pngFilename} as PNG`}
-              onClick={() => void handlePngExport()}
-            />
-          }
-        >
-          <Download aria-hidden="true" className="size-4" />
-        </TooltipTrigger>
-        <TooltipContent>Export PNG</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Open chart in full screen"
-              onClick={onFullscreen}
-            />
-          }
-        >
-          <Expand aria-hidden="true" className="size-4" />
-        </TooltipTrigger>
-        <TooltipContent>Full screen</TooltipContent>
-      </Tooltip>
+    <div className="flex items-center gap-1.5">
+      <ChartActionButton
+        label="Export CSV"
+        chipClassName="bg-[var(--retro-mint)]"
+        onClick={onExportCsv}
+      >
+        <FileSpreadsheet aria-hidden="true" className="size-4" />
+      </ChartActionButton>
+      <ChartActionButton
+        label="Export PNG"
+        chipClassName="bg-[var(--retro-pink)]"
+        onClick={() => void handlePngExport()}
+      >
+        <Download aria-hidden="true" className="size-4" />
+      </ChartActionButton>
+      <ChartActionButton
+        label="Full screen"
+        chipClassName="bg-[var(--retro-blue)]"
+        onClick={onFullscreen}
+      >
+        <Expand aria-hidden="true" className="size-4" />
+      </ChartActionButton>
     </div>
   );
 }

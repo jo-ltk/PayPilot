@@ -48,7 +48,9 @@ describe("SettlementsPage", () => {
       expect(screen.getByText("PAYOUT-001")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Settlements")).toBeInTheDocument();
+    expect(
+      screen.getByText("Every payout, tracked and clear"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Completed")).toBeInTheDocument();
   });
 

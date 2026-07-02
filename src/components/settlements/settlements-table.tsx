@@ -2,10 +2,12 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Table } from "@tanstack/react-table";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { DataTableEmpty } from "@/components/shared/data-table-empty";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { ServerDataTable } from "@/components/shared/server-data-table";
+import { reducedMotionTransition, tableBodyVariants } from "@/lib/animations";
 import type { SettlementView } from "@/schemas/payments.schema";
 
 interface SettlementsTableProps {
@@ -24,24 +26,42 @@ export function SettlementsTable({
   onRowClick,
   onResetFilters,
 }: SettlementsTableProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   if (isLoading && table.getRowModel().rows.length === 0) {
-    return <LoadingSkeleton variant="table" rows={10} />;
+    return (
+      <LoadingSkeleton
+        variant="table"
+        rows={10}
+        className="retro-panel retro-table-skeleton p-4 sm:p-5"
+      />
+    );
   }
 
   return (
-    <ServerDataTable
-      table={table}
-      columns={columns}
-      isLoading={isLoading}
-      onRowClick={onRowClick}
-      emptyState={
-        <DataTableEmpty
-          title="No settlements yet"
-          description="Payout batches will appear here once settlements are processed."
-          actionLabel="Clear filters"
-          onAction={onResetFilters}
-        />
-      }
-    />
+    <motion.div
+      variants={tableBodyVariants}
+      initial="hidden"
+      animate="visible"
+      transition={prefersReducedMotion ? reducedMotionTransition : undefined}
+      className="retro-panel overflow-hidden"
+    >
+      <ServerDataTable
+        table={table}
+        columns={columns}
+        isLoading={isLoading}
+        onRowClick={onRowClick}
+        className="retro-data-table max-h-[calc(100vh-22rem)] overflow-auto rounded-none border-0"
+        emptyState={
+          <DataTableEmpty
+            title="No settlements yet"
+            description="Payout batches will appear here once settlements are processed."
+            actionLabel="Clear filters"
+            onAction={onResetFilters}
+            className="border-0 px-4 py-12"
+          />
+        }
+      />
+    </motion.div>
   );
 }

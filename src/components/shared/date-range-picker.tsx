@@ -54,14 +54,14 @@ export function DateRangePicker({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start font-normal sm:w-[260px]",
+              !isChip && "w-full justify-start font-normal sm:w-[260px]",
               !value.from && "text-muted-foreground",
               isChip &&
                 iconOnly &&
-                "size-10 w-10 min-w-10 justify-center rounded-full border-transparent p-0 shadow-none",
+                "size-10 w-10 min-w-10 shrink-0 justify-center rounded-full border-transparent p-0 shadow-none",
               isChip &&
                 !iconOnly &&
-                "retro-pill h-11 w-auto justify-start gap-2.5 border-transparent pl-1.5 pr-3",
+                "retro-pill size-10 w-10 min-w-10 shrink-0 justify-center border-transparent p-0 sm:h-11 sm:w-auto sm:min-w-0 sm:justify-start sm:gap-2.5 sm:pl-1.5 sm:pr-3 sm:w-[260px]",
               className,
             )}
           />

@@ -116,7 +116,7 @@ export function PasswordChangeForm({ disabled = false }: PasswordChangeFormProps
           onChange={(event) => setConfirmPassword(event.target.value)}
         />
       </div>
-      <Button type="submit" disabled={disabled || isSubmitting}>
+      <Button type="submit" className="h-11 rounded-full px-5" disabled={disabled || isSubmitting}>
         {isSubmitting ? (
           <>
             <Loader2 aria-hidden="true" className="size-4 animate-spin" />

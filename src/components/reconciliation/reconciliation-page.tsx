@@ -3,11 +3,10 @@
 import { Role } from "@prisma/client";
 import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
+import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/layout/page-header";
 import { ErrorState } from "@/components/shared/error-state";
-import { PageTransition } from "@/components/shared/page-transition";
 import { ServerDataTablePagination } from "@/components/shared/server-data-table-pagination";
 import { ReconciliationTable } from "@/components/reconciliation/reconciliation-table";
 import { ReconciliationToolbar } from "@/components/reconciliation/reconciliation-toolbar";
@@ -17,6 +16,7 @@ import { useReconciliation } from "@/hooks/use-reconciliation";
 import { useResolveReconciliation } from "@/hooks/use-resolve-reconciliation";
 import { useServerDataTable } from "@/hooks/use-server-data-table";
 import { useShopContext } from "@/hooks/use-shop-context";
+import { filterToolbarVariants, reducedMotionTransition } from "@/lib/animations";
 import { filterReconciliationRows } from "@/lib/filter-reconciliation-rows";
 import { toApiDateRange } from "@/lib/dashboard";
 import { hasRole } from "@/lib/auth/rbac";
@@ -38,6 +38,20 @@ const ResolveDialog = dynamic(
   { ssr: false },
 );
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
+}
+
 /** Shared reconciliation page wired to the reconciliation API. */
 export function ReconciliationPage() {
   const queryClient = useQueryClient();
@@ -54,6 +68,7 @@ export function ReconciliationPage() {
   } = useListFilters({ sortBy: "createdAt" });
   const reconciliation = useReconciliation(shopId, apiParams);
   const resolveMutation = useResolveReconciliation(shopId);
+  const prefersReducedMotion = useReducedMotion();
   const [selected, setSelected] = useState<ReconciliationView | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [resolveTarget, setResolveTarget] = useState<ReconciliationView | null>(
@@ -145,11 +160,18 @@ export function ReconciliationPage() {
   }, []);
 
   return (
-    <PageTransition className="space-y-6">
-      <PageHeader
-        title="Reconciliation"
-        description="Review mismatches and resolve payment gaps."
-      />
+    <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <header className="max-w-4xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          {getGreeting()}
+        </p>
+        <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          Every mismatch, tracked and resolved
+        </h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Review mismatches and resolve payment gaps.
+        </p>
+      </header>
 
       <ReconciliationToolbar
         table={table}
@@ -181,7 +203,20 @@ export function ReconciliationPage() {
             onResetFilters={resetFilters}
           />
           {rows.length > 0 ? (
-            <ServerDataTablePagination meta={meta} onPageChange={setPage} />
+            <motion.div
+              variants={filterToolbarVariants}
+              initial="hidden"
+              animate="visible"
+              transition={
+                prefersReducedMotion ? reducedMotionTransition : undefined
+              }
+            >
+              <ServerDataTablePagination
+                meta={meta}
+                onPageChange={setPage}
+                className="retro-pagination px-3 sm:px-4"
+              />
+            </motion.div>
           ) : null}
         </>
       )}
@@ -202,6 +237,6 @@ export function ReconciliationPage() {
         isPending={resolveMutation.isPending}
         onConfirm={handleConfirmResolve}
       />
-    </PageTransition>
+    </div>
   );
 }

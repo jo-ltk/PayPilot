@@ -74,16 +74,17 @@ export function TeamMembersTable({
     canManage && currentRole != null && hasRole(currentRole, Role.OWNER);
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Member</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div className="retro-panel overflow-hidden">
+      <Table className="retro-settings-table">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Member</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
         {members.map((member) => {
           const isSelf = member.id === currentUserId;
           const isPending = member.status === "pending";
@@ -161,7 +162,8 @@ export function TeamMembersTable({
             </TableRow>
           );
         })}
-      </TableBody>
-    </Table>
+        </TableBody>
+      </Table>
+    </div>
   );
 }

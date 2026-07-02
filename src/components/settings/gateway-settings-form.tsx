@@ -2,7 +2,7 @@
 
 import { GatewayEnvironment } from "@prisma/client";
 import { motion, useReducedMotion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plug, Save } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -259,49 +259,80 @@ export const GatewaySettingsForm = memo(function GatewaySettingsForm({
           </div>
         </div>
 
-        <MatchingStrategyFields
-          values={values}
-          disabled={!editable || isSaving}
-          onChange={patchValues}
-        />
+        <div className="retro-subpanel space-y-4 p-4 sm:p-5">
+          <div className="space-y-1">
+            <h3 className="font-retro text-base font-medium text-foreground">
+              Matching strategy
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              How payments are matched to orders during reconciliation.
+            </p>
+          </div>
+          <MatchingStrategyFields
+            values={values}
+            disabled={!editable || isSaving}
+            onChange={patchValues}
+          />
+        </div>
 
         <WebhookUrlsPanel webhookUrls={webhookUrls} />
       </CardContent>
 
-      <CardFooter className="flex flex-wrap gap-2">
+      <CardFooter className="grid grid-cols-2 gap-2 sm:flex sm:flex-nowrap sm:items-center sm:justify-start">
         <motion.div
           variants={saveSuccessVariants}
           animate={savePulse}
           transition={prefersReducedMotion ? reducedMotionTransition : undefined}
+          className="min-w-0"
         >
           <Button
             type="button"
+            className="retro-primary-pill h-11 w-full gap-2 border-transparent px-2.5 sm:w-auto sm:gap-2.5 sm:pl-1.5 sm:pr-4"
             disabled={!editable || isSaving || !isDirty}
             onClick={() => void handleSave()}
           >
             {isSaving ? (
               <>
-                <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                Saving…
+                <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin" />
+                <span className="truncate font-retro text-xs font-medium sm:text-sm">
+                  Saving…
+                </span>
               </>
             ) : (
-              "Save changes"
+              <>
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-white/25 text-current sm:size-8">
+                  <Save aria-hidden="true" className="size-3.5 sm:size-4" />
+                </span>
+                <span className="truncate font-retro text-xs font-medium sm:text-sm">
+                  Save changes
+                </span>
+              </>
             )}
           </Button>
         </motion.div>
         <Button
           type="button"
           variant="outline"
+          className="retro-pill h-11 w-full min-w-0 gap-2 border-transparent px-2.5 sm:w-auto sm:gap-2.5 sm:pl-1.5 sm:pr-4"
           disabled={!editable || isTesting}
           onClick={() => void handleTestConnection()}
         >
           {isTesting ? (
             <>
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Testing…
+              <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin" />
+              <span className="truncate font-retro text-xs font-medium text-foreground sm:text-sm">
+                Testing…
+              </span>
             </>
           ) : (
-            "Test connection"
+            <>
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-mint)] text-[var(--retro-chart-strong)] sm:size-8">
+                <Plug aria-hidden="true" className="size-3.5 sm:size-4" />
+              </span>
+              <span className="truncate font-retro text-xs font-medium text-foreground sm:text-sm">
+                Test connection
+              </span>
+            </>
           )}
         </Button>
       </CardFooter>

@@ -49,24 +49,24 @@ export function SecurityPanel() {
             Details about your current authenticated session.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <div className="flex items-center justify-between gap-4">
+        <CardContent className="space-y-2 text-sm">
+          <div className="retro-session-row flex items-center justify-between gap-4">
             <span className="text-muted-foreground">Mode</span>
             <span className="font-medium capitalize">{mode}</span>
           </div>
           {userEmail ? (
-            <div className="flex items-center justify-between gap-4">
+            <div className="retro-session-row flex items-center justify-between gap-4">
               <span className="text-muted-foreground">Email</span>
               <span className="font-medium">{userEmail}</span>
             </div>
           ) : null}
           {role ? (
-            <div className="flex items-center justify-between gap-4">
+            <div className="retro-session-row flex items-center justify-between gap-4">
               <span className="text-muted-foreground">Role</span>
               <span className="font-medium">{ROLE_LABELS[role]}</span>
             </div>
           ) : null}
-          <div className="flex items-center justify-between gap-4">
+          <div className="retro-session-row flex items-center justify-between gap-4">
             <span className="text-muted-foreground">Shop</span>
             <span className="font-medium">{shopDomain ?? shopId ?? "—"}</span>
           </div>
@@ -91,7 +91,7 @@ export function SecurityPanel() {
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="retro-subpanel flex flex-wrap items-center gap-3 p-4">
               <StatusBadge
                 label={healthQuery.data?.status === "ok" ? "Healthy" : "Degraded"}
                 variant={healthVariant}
@@ -136,10 +136,13 @@ export function SecurityPanel() {
           <Button
             type="button"
             variant="outline"
+            className="retro-pill gap-2.5 border-transparent pl-1.5 pr-4"
             onClick={() => void handleLogoutEverywhere()}
           >
-            <LogOut aria-hidden="true" className="size-4" />
-            Logout everywhere
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-pink)] text-[var(--retro-chart-strong)]">
+              <LogOut aria-hidden="true" className="size-4" />
+            </span>
+            <span className="font-retro text-sm font-medium">Logout everywhere</span>
           </Button>
         </CardContent>
       </Card>

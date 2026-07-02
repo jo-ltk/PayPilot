@@ -2,11 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
+import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/layout/page-header";
 import { ErrorState } from "@/components/shared/error-state";
-import { PageTransition } from "@/components/shared/page-transition";
 import { ServerDataTablePagination } from "@/components/shared/server-data-table-pagination";
 import { useRefundColumns } from "@/components/refunds/refund-columns";
 import { RefundsTable } from "@/components/refunds/refunds-table";
@@ -15,6 +14,7 @@ import { useListFilters } from "@/hooks/use-list-filters";
 import { useRefunds } from "@/hooks/use-refunds";
 import { useServerDataTable } from "@/hooks/use-server-data-table";
 import { useShopContext } from "@/hooks/use-shop-context";
+import { filterToolbarVariants, reducedMotionTransition } from "@/lib/animations";
 import type { RefundView } from "@/schemas/payments.schema";
 
 const RefundDetailSheet = dynamic(
@@ -24,6 +24,20 @@ const RefundDetailSheet = dynamic(
     ),
   { ssr: false },
 );
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
+}
 
 function filterRefundRows(rows: RefundView[], search?: string): RefundView[] {
   const query = search?.trim().toLowerCase();
@@ -55,6 +69,7 @@ export function RefundsPage() {
     resetFilters,
   } = useListFilters({ sortBy: "processedAt" });
   const refunds = useRefunds(shopId, apiParams);
+  const prefersReducedMotion = useReducedMotion();
   const [selected, setSelected] = useState<RefundView | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -103,11 +118,18 @@ export function RefundsPage() {
   }, []);
 
   return (
-    <PageTransition className="space-y-6">
-      <PageHeader
-        title="Refunds"
-        description="Monitor refund volume and processing status."
-      />
+    <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <header className="max-w-4xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          {getGreeting()}
+        </p>
+        <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          Every refund, tracked and clear
+        </h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Monitor refund volume and processing status.
+        </p>
+      </header>
 
       <RefundsToolbar
         search={filters.search}
@@ -135,7 +157,20 @@ export function RefundsPage() {
             onResetFilters={resetFilters}
           />
           {rows.length > 0 ? (
-            <ServerDataTablePagination meta={meta} onPageChange={setPage} />
+            <motion.div
+              variants={filterToolbarVariants}
+              initial="hidden"
+              animate="visible"
+              transition={
+                prefersReducedMotion ? reducedMotionTransition : undefined
+              }
+            >
+              <ServerDataTablePagination
+                meta={meta}
+                onPageChange={setPage}
+                className="retro-pagination px-3 sm:px-4"
+              />
+            </motion.div>
           ) : null}
         </>
       )}
@@ -146,6 +181,6 @@ export function RefundsPage() {
         onOpenChange={setSheetOpen}
         onRefresh={refresh}
       />
-    </PageTransition>
+    </div>
   );
 }

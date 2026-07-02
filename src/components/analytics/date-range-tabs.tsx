@@ -2,6 +2,7 @@
 
 import { DateRangePicker } from "@/components/shared/date-range-picker";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   ANALYTICS_RANGE_PRESETS,
   detectAnalyticsPreset,
@@ -33,14 +34,27 @@ export function DateRangeTabs({ value, onChange }: DateRangeTabsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <Tabs value={activePreset} onValueChange={handlePresetChange}>
+    <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <Tabs value={activePreset} onValueChange={handlePresetChange} className="w-full min-w-0">
         <TabsList
-          variant="line"
-          className="h-auto w-full flex-wrap justify-start gap-1 sm:w-auto"
+          variant="default"
+          className={cn(
+            "retro-analytics-tabs h-auto w-full gap-2 rounded-none bg-transparent p-0",
+            "group-data-horizontal/tabs:h-auto",
+            "grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap",
+          )}
         >
           {ANALYTICS_RANGE_PRESETS.map((preset) => (
-            <TabsTrigger key={preset.id} value={preset.id}>
+            <TabsTrigger
+              key={preset.id}
+              value={preset.id}
+              className={cn(
+                "retro-pill h-9 w-full flex-none rounded-full border-transparent px-2 text-xs font-medium shadow-none sm:w-auto sm:px-3 sm:text-sm",
+                "after:hidden focus-visible:ring-2 focus-visible:ring-ring/25",
+                "data-active:bg-[var(--retro-blue)] data-active:text-[var(--retro-chart-strong)]",
+                "hover:bg-[color-mix(in_oklch,var(--secondary)_70%,var(--card))]",
+              )}
+            >
               {preset.label}
             </TabsTrigger>
           ))}
@@ -51,6 +65,8 @@ export function DateRangeTabs({ value, onChange }: DateRangeTabsProps) {
           value={value}
           onChange={onChange}
           placeholder="Custom range"
+          variant="chip"
+          className="h-11 shrink-0"
         />
       ) : null}
     </div>

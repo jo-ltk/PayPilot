@@ -11,16 +11,9 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 
-import { AnimatedNumber } from "@/components/analytics/animated-number";
+import { AnalyticsKpiCard } from "@/components/analytics/analytics-kpi-card";
 import { ErrorState } from "@/components/shared/error-state";
-import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeMatchRate } from "@/lib/analytics-metrics";
 import {
   kpiCardVariants,
@@ -39,6 +32,15 @@ interface AnalyticsOverviewProps {
   errorMessage?: string;
   onRetry?: () => void;
 }
+
+const retroCardStyles = [
+  "bg-[var(--retro-pink)]",
+  "bg-[var(--retro-blue)]",
+  "bg-[var(--retro-yellow)]",
+  "bg-[var(--retro-mint)]",
+  "bg-[var(--retro-lilac)]",
+  "bg-[var(--retro-pink)]",
+];
 
 function buildOverviewItems(
   data: AnalyticsResponse,
@@ -96,6 +98,23 @@ function buildOverviewItems(
   ];
 }
 
+function OverviewSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={`overview-skeleton-${index}`}
+          className="flex flex-col gap-4 rounded-[1.5rem] border border-[var(--retro-ink)] p-5"
+        >
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Six-card analytics overview with animated metrics. */
 export const AnalyticsOverview = memo(function AnalyticsOverview({
   data,
@@ -108,13 +127,7 @@ export const AnalyticsOverview = memo(function AnalyticsOverview({
   const prefersReducedMotion = useReducedMotion();
 
   if (isLoading) {
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <LoadingSkeleton key={`overview-skeleton-${index}`} variant="card" />
-        ))}
-      </div>
-    );
+    return <OverviewSkeleton />;
   }
 
   if (isError) {
@@ -141,29 +154,20 @@ export const AnalyticsOverview = memo(function AnalyticsOverview({
       variants={kpiGridVariants}
       transition={prefersReducedMotion ? reducedMotionTransition : undefined}
     >
-      {items.map((item) => (
+      {items.map((item, index) => (
         <motion.div
           key={item.key}
           variants={kpiCardVariants}
           transition={prefersReducedMotion ? reducedMotionTransition : undefined}
         >
-          <Card className="border-border/80 shadow-none transition-colors hover:bg-muted/30">
-            <CardHeader className="gap-1 pb-2">
-              <div className="flex items-center justify-between gap-2">
-                <CardDescription>{item.title}</CardDescription>
-                <item.icon
-                  aria-hidden="true"
-                  className="size-4 text-muted-foreground"
-                />
-              </div>
-              <CardTitle className="text-2xl font-semibold tracking-tight">
-                <AnimatedNumber value={item.value} format={item.format} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-xs text-muted-foreground">{item.description}</p>
-            </CardContent>
-          </Card>
+          <AnalyticsKpiCard
+            title={item.title}
+            value={item.value}
+            format={item.format}
+            description={item.description}
+            icon={item.icon}
+            className={retroCardStyles[index % retroCardStyles.length]}
+          />
         </motion.div>
       ))}
     </motion.div>

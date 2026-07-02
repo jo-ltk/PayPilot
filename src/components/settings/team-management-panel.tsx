@@ -85,11 +85,13 @@ export function TeamManagementPanel({ shopId }: TeamManagementPanelProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <TeamInviteForm
-          shopId={shopId}
-          disabled={!canManage}
-          onInvited={handleInvited}
-        />
+        <div className="retro-subpanel p-4 sm:p-5">
+          <TeamInviteForm
+            shopId={shopId}
+            disabled={!canManage}
+            onInvited={handleInvited}
+          />
+        </div>
 
         {members.length === 0 ? (
           <EmptyState

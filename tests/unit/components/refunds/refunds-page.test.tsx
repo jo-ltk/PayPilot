@@ -48,7 +48,9 @@ describe("RefundsPage", () => {
       expect(screen.getByText("REF-001")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Refunds")).toBeInTheDocument();
+    expect(
+      screen.getByText("Every refund, tracked and clear"),
+    ).toBeInTheDocument();
   });
 
   it("opens the refund detail drawer on row click", async () => {

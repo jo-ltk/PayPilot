@@ -42,9 +42,11 @@ export function WebhookUrlsPanel({ webhookUrls }: WebhookUrlsPanelProps) {
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4">
+    <div className="retro-subpanel space-y-4 p-4 sm:p-5">
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-foreground">Webhook URLs</h3>
+        <h3 className="font-retro text-base font-medium text-foreground">
+          Webhook URLs
+        </h3>
         <p className="text-sm text-muted-foreground">
           Copy these into your Easebuzz dashboard after a successful connection
           test.
@@ -65,6 +67,7 @@ export function WebhookUrlsPanel({ webhookUrls }: WebhookUrlsPanelProps) {
                 type="button"
                 variant="outline"
                 size="icon"
+                className="retro-pill shrink-0 border-transparent"
                 aria-label={`Copy ${label}`}
                 onClick={() => void copyWebhookUrl(label, webhookUrls[key])}
               >

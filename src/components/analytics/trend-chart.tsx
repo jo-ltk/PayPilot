@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { chartFadeVariants, reducedMotionTransition } from "@/lib/animations";
 import { buildCsv, downloadCsv } from "@/lib/export-csv";
+import { cn } from "@/lib/utils";
 
 interface TrendChartProps {
   title: string;
@@ -121,11 +122,17 @@ export const TrendChart = memo(function TrendChart({
       </ChartShell>
 
       <Dialog open={fullscreen} onOpenChange={setFullscreen}>
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
+        <DialogContent
+          className={cn(
+            "gap-3 p-4",
+            "top-[max(0.75rem,env(safe-area-inset-top))] max-h-[calc(100dvh-1.5rem)] translate-y-0 overflow-y-auto",
+            "sm:top-1/2 sm:max-w-5xl sm:-translate-y-1/2",
+          )}
+        >
+          <DialogHeader className="shrink-0 pr-8">
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          <div className="h-[28rem] w-full">{chartBody}</div>
+          <div className="h-64 w-full min-w-0 sm:h-[28rem]">{chartBody}</div>
         </DialogContent>
       </Dialog>
     </>

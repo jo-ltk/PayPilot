@@ -66,7 +66,12 @@ function renderChart(
             background: "var(--background)",
           }}
         />
-        <Bar dataKey="value" fill="var(--foreground)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+        <Bar
+          dataKey="value"
+          fill="var(--retro-chart-strong, var(--foreground))"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={32}
+        />
       </BarChart>
     );
   }
@@ -85,7 +90,13 @@ function renderChart(
             background: "var(--background)",
           }}
         />
-        <Line type="monotone" dataKey="value" stroke="var(--foreground)" strokeWidth={2} dot={false} />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke="var(--retro-chart-strong, var(--foreground))"
+          strokeWidth={2}
+          dot={false}
+        />
       </LineChart>
     );
   }
@@ -94,8 +105,16 @@ function renderChart(
     <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.12} />
-          <stop offset="95%" stopColor="var(--foreground)" stopOpacity={0} />
+          <stop
+            offset="5%"
+            stopColor="var(--retro-chart-strong, var(--foreground))"
+            stopOpacity={0.35}
+          />
+          <stop
+            offset="95%"
+            stopColor="var(--retro-chart-strong, var(--foreground))"
+            stopOpacity={0.03}
+          />
         </linearGradient>
       </defs>
       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -112,7 +131,7 @@ function renderChart(
       <Area
         type="monotone"
         dataKey="value"
-        stroke="var(--foreground)"
+        stroke="var(--retro-chart-strong, var(--foreground))"
         fill={`url(#${gradientId})`}
         strokeWidth={2}
       />

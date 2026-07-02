@@ -11,10 +11,7 @@ import { AnalyticsInsights } from "@/components/analytics/analytics-insights";
 import { AnalyticsOverview } from "@/components/analytics/analytics-overview";
 import { AnalyticsToolbar } from "@/components/analytics/analytics-toolbar";
 import { GatewayBreakdownChart } from "@/components/analytics/gateway-breakdown-chart";
-import { PageHeader } from "@/components/layout/page-header";
 import { ErrorState } from "@/components/shared/error-state";
-import { PageTransition } from "@/components/shared/page-transition";
-import { SectionHeader } from "@/components/shared/section-header";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useAnalyticsInsights } from "@/hooks/use-analytics-insights";
 import { useShopContext } from "@/hooks/use-shop-context";
@@ -22,6 +19,20 @@ import { defaultAnalyticsRange } from "@/lib/analytics-range";
 import { normalizeMatchRate } from "@/lib/analytics-metrics";
 import { buildCsv, downloadCsv } from "@/lib/export-csv";
 import type { DateRange } from "@/types/common";
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
+}
 
 /**
  * Builds a combined CSV export for analytics overview metrics.
@@ -64,6 +75,23 @@ function buildAnalyticsExportCsv(
     { header: "Metric", value: (row) => row.metric },
     { header: "Value", value: (row) => row.value },
   ]);
+}
+
+interface AnalyticsSectionHeaderProps {
+  title: string;
+  description: string;
+}
+
+function AnalyticsSectionHeader({
+  title,
+  description,
+}: AnalyticsSectionHeaderProps) {
+  return (
+    <div className="space-y-1">
+      <h2 className="font-retro text-2xl font-medium tracking-tight">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
 }
 
 /** Shared analytics page wired to the analytics API. */
@@ -112,25 +140,39 @@ export function AnalyticsPage() {
 
   if (isError) {
     return (
-      <PageTransition className="space-y-6">
-        <PageHeader
-          title="Analytics"
-          description="Explore trends, gateway mix, and settlement performance."
-        />
+      <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <header className="max-w-4xl space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+            {getGreeting()}
+          </p>
+          <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+            Trends, gateway mix &amp; settlement performance
+          </h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Explore trends, gateway mix, and settlement performance.
+          </p>
+        </header>
         <ErrorState
           message={errorMessage ?? "Failed to load analytics"}
           onRetry={refresh}
         />
-      </PageTransition>
+      </div>
     );
   }
 
   return (
-    <PageTransition className="space-y-8">
-      <PageHeader
-        title="Analytics"
-        description="Explore trends, gateway mix, and settlement performance."
-      />
+    <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <header className="max-w-4xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          {getGreeting()}
+        </p>
+        <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          Trends, gateway mix &amp; settlement performance
+        </h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Explore trends, gateway mix, and settlement performance.
+        </p>
+      </header>
 
       <AnalyticsToolbar
         dateRange={dateRange}
@@ -141,7 +183,7 @@ export function AnalyticsPage() {
       />
 
       <section className="space-y-4" aria-labelledby="analytics-overview-heading">
-        <SectionHeader
+        <AnalyticsSectionHeader
           title="Overview"
           description="Headline metrics for the selected period"
         />
@@ -156,7 +198,7 @@ export function AnalyticsPage() {
       </section>
 
       <section className="space-y-4" aria-labelledby="analytics-charts-heading">
-        <SectionHeader
+        <AnalyticsSectionHeader
           title="Charts"
           description="Trends across revenue, settlements, refunds, and rates"
         />
@@ -238,12 +280,12 @@ export function AnalyticsPage() {
       </section>
 
       <section className="space-y-4" aria-labelledby="analytics-insights-heading">
-        <SectionHeader
+        <AnalyticsSectionHeader
           title="Insights"
           description="Key findings from your payment data"
         />
         <AnalyticsInsights insights={insights.data} isLoading={isLoading} />
       </section>
-    </PageTransition>
+    </div>
   );
 }

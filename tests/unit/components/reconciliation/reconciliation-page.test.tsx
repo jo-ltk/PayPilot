@@ -51,7 +51,9 @@ describe("ReconciliationPage", () => {
       expect(screen.getByText("Mismatch")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Reconciliation")).toBeInTheDocument();
+    expect(
+      screen.getByText("Every mismatch, tracked and resolved"),
+    ).toBeInTheDocument();
   });
 
   it("opens the detail drawer on row click", async () => {

@@ -31,7 +31,7 @@ interface InfoRowProps {
 /** Label/value row for shop metadata. */
 function InfoRow({ label, value }: InfoRowProps) {
   return (
-    <div className="flex flex-col gap-1 border-b border-border py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+    <div className="retro-info-row flex flex-col gap-1 border-b py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium text-foreground">{value}</dd>
     </div>
@@ -49,7 +49,7 @@ export function ShopSettingsPanel({ shopId }: ShopSettingsPanelProps) {
   const isLoading = shopsQuery.isLoading || settingsQuery.isLoading;
 
   if (isLoading) {
-    return <Skeleton className="h-64 w-full rounded-xl" />;
+    return <Skeleton className="retro-panel h-64 w-full rounded-[1.5rem]" />;
   }
 
   if (!shop) {
