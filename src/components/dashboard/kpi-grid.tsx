@@ -11,7 +11,7 @@ import {
 import { memo } from "react";
 
 import { KpiCardSkeleton } from "@/components/dashboard/kpi-card";
-import { KpiCard as SharedKpiCard } from "@/components/shared/kpi-card";
+import { RetroKpiCard } from "@/components/dashboard/retro-kpi-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import {
@@ -33,6 +33,14 @@ interface KpiGridProps {
   errorMessage?: string;
   onRetry?: () => void;
 }
+
+const retroCardStyles = [
+  "bg-[var(--retro-pink)]",
+  "bg-[var(--retro-blue)]",
+  "bg-[var(--retro-yellow)]",
+  "bg-[var(--retro-mint)]",
+  "bg-[var(--retro-lilac)]",
+];
 
 function buildKpiItems(data: AnalyticsResponse) {
   const salesTrend = computeSeriesTrend(data.series);
@@ -149,18 +157,19 @@ export const KpiGrid = memo(function KpiGrid({
       variants={kpiGridVariants}
       transition={prefersReducedMotion ? reducedMotionTransition : undefined}
     >
-      {items.map((item) => (
+      {items.map((item, index) => (
         <motion.div
           key={item.key}
           variants={kpiCardVariants}
           transition={prefersReducedMotion ? reducedMotionTransition : undefined}
         >
-          <SharedKpiCard
+          <RetroKpiCard
             title={item.title}
             value={item.value}
             description={item.description}
             trend={item.trend}
             icon={item.icon}
+            className={retroCardStyles[index % retroCardStyles.length]}
           />
         </motion.div>
       ))}

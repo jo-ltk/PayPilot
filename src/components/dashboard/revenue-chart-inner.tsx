@@ -49,8 +49,16 @@ export const RevenueChartInner = memo(function RevenueChartInner({
         <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.12} />
-              <stop offset="95%" stopColor="var(--foreground)" stopOpacity={0} />
+              <stop
+                offset="5%"
+                stopColor="var(--retro-chart-strong, var(--foreground))"
+                stopOpacity={0.35}
+              />
+              <stop
+                offset="95%"
+                stopColor="var(--retro-chart-strong, var(--foreground))"
+                stopOpacity={0.03}
+              />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -82,7 +90,7 @@ export const RevenueChartInner = memo(function RevenueChartInner({
           <Area
             type="monotone"
             dataKey="grossPaise"
-            stroke="var(--foreground)"
+            stroke="var(--retro-chart-strong, var(--foreground))"
             fill="url(#revenueFill)"
             strokeWidth={2}
           />

@@ -180,3 +180,69 @@
     animation: none;
   }
 }
+
+/*
+ * Retro dashboard theme — scoped to the dashboard page only.
+ * Overrides shadcn CSS variables inside `.retro-dash` so shared
+ * components pick up the light-blue palette without source edits.
+ */
+.retro-dash {
+  --background: #f4f7fc;
+  --foreground: #16233c;
+  --card: #ffffff;
+  --card-foreground: #16233c;
+  --popover: #ffffff;
+  --popover-foreground: #16233c;
+  --primary: #1d63f2;
+  --primary-foreground: #ffffff;
+  --secondary: #e9effb;
+  --secondary-foreground: #16233c;
+  --muted: #e9effb;
+  --muted-foreground: #5c6b85;
+  --accent: #e9effb;
+  --accent-foreground: #16233c;
+  --border: #dbe4f4;
+  --ring: #1d63f2;
+  --radius: 1.25rem;
+
+  --retro-pink: #e9f0fc;
+  --retro-blue: #dfe9fb;
+  --retro-yellow: #f0f5fd;
+  --retro-mint: #e4edfb;
+  --retro-lilac: #f4f8fe;
+  --retro-ink: #d7e2f4;
+  --retro-chip: #dbe7fb;
+  --retro-chip-foreground: #1d63f2;
+  --retro-chart-strong: #1d63f2;
+  --retro-chart-soft: #7fa4f2;
+
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.retro-dash .font-retro,
+.retro-dash h1,
+.retro-dash h2 {
+  font-family: var(--font-poppins), var(--font-geist-sans), Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Every shadcn card inside the retro dashboard: soft outline + subtle shadow. */
+.retro-dash [data-slot="card"] {
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px var(--retro-ink),
+    0 8px 24px -18px rgb(29 99 242 / 0.35);
+  --card-spacing: 1.5rem;
+}
+
+.retro-dash [data-slot="card-title"] {
+  font-family: var(--font-poppins), var(--font-geist-sans), Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.retro-dash [data-slot="card-description"] {
+  color: color-mix(in oklch, var(--foreground) 55%, transparent);
+}

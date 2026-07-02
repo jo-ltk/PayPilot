@@ -82,8 +82,8 @@ export const SettlementTrendChartInner = memo(
             />
             <Bar
               dataKey="amountPaise"
-              fill="var(--foreground)"
-              radius={[4, 4, 0, 0]}
+              fill="var(--retro-chart-strong, var(--foreground))"
+              radius={[8, 8, 0, 0]}
               maxBarSize={32}
             />
           </BarChart>

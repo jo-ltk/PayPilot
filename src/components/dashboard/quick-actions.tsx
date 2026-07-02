@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
+  ArrowUpRight,
   Scale,
   Settings,
   Wallet,
@@ -25,6 +26,13 @@ interface QuickAction {
   href: string;
   icon: typeof Scale;
 }
+
+const retroChipStyles = [
+  "bg-[var(--retro-yellow)]",
+  "bg-[var(--retro-pink)]",
+  "bg-[var(--retro-blue)]",
+  "bg-[var(--retro-yellow)]",
+];
 
 function buildBasePath(mode: "embedded" | "standalone", shopId: string | null): string {
   if (mode === "embedded") {
@@ -68,32 +76,38 @@ export function QuickActions() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {actions.map((action) => (
+      {actions.map((action, index) => (
         <motion.div
           key={action.title}
           variants={kpiCardVariants}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Link href={action.href} className="block h-full">
-            <Card
-              className={cn(
-                "h-full border-border/80 shadow-none transition-colors",
-                "hover:border-foreground/20 hover:bg-muted/30",
-              )}
-            >
-              <CardHeader className="gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg border border-border bg-background">
-                  <action.icon
+          <Link href={action.href} className="group block h-full">
+            <Card className="h-full shadow-none transition-colors hover:bg-secondary/60">
+              <CardHeader className="gap-4">
+                <div className="flex items-start justify-between">
+                  <div
+                    className={cn(
+                      "flex size-10 items-center justify-center rounded-full",
+                      retroChipStyles[index % retroChipStyles.length],
+                    )}
+                  >
+                    <action.icon
+                      aria-hidden="true"
+                      className="size-4 text-foreground"
+                    />
+                  </div>
+                  <ArrowUpRight
                     aria-hidden="true"
-                    className="size-4 text-muted-foreground"
+                    className="size-4 text-foreground/40 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
                   />
                 </div>
                 <div className="space-y-1">
-                  <CardTitle className="text-sm font-medium">
-                    {action.title}
-                  </CardTitle>
-                  <CardDescription>{action.description}</CardDescription>
+                  <CardTitle className="text-base">{action.title}</CardTitle>
+                  <CardDescription className="text-xs">
+                    {action.description}
+                  </CardDescription>
                 </div>
               </CardHeader>
             </Card>

@@ -45,10 +45,10 @@ const activityIcons: Record<ActivityItem["type"], LucideIcon> = {
 };
 
 const activityStyles: Record<ActivityItem["type"], string> = {
-  payment: "text-foreground",
-  settlement: "text-success",
-  refund: "text-muted-foreground",
-  reconciliation: "text-warning",
+  payment: "bg-[var(--retro-blue,var(--muted))]",
+  settlement: "bg-[var(--retro-yellow,var(--muted))]",
+  refund: "bg-[var(--retro-pink,var(--muted))]",
+  reconciliation: "bg-muted",
 };
 
 /** Timeline of recent payments, settlements, refunds, and reconciliation. */
@@ -114,7 +114,7 @@ export function RecentActivity({
                   ) : null}
                   <div
                     className={cn(
-                      "relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-background",
+                      "relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full text-foreground",
                       activityStyles[item.type],
                     )}
                   >

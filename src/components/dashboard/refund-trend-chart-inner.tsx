@@ -81,8 +81,8 @@ export const RefundTrendChartInner = memo(function RefundTrendChartInner({
           />
           <Bar
             dataKey="amountPaise"
-            fill="var(--muted-foreground)"
-            radius={[4, 4, 0, 0]}
+            fill="var(--retro-chart-soft, var(--muted-foreground))"
+            radius={[8, 8, 0, 0]}
             maxBarSize={32}
           />
         </BarChart>

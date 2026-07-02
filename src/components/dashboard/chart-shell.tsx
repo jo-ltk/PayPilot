@@ -61,7 +61,7 @@ export function ChartShell({
         </div>
         {hasTable && !isLoading && !isError && !isEmpty ? (
           <div
-            className="flex shrink-0 items-center gap-1 rounded-lg border border-border p-0.5"
+            className="flex shrink-0 items-center gap-1 rounded-full border border-foreground/15 p-1"
             role="group"
             aria-label="Chart view mode"
           >
@@ -72,6 +72,7 @@ export function ChartShell({
                     type="button"
                     variant={view === "chart" ? "secondary" : "ghost"}
                     size="icon-sm"
+                    className="rounded-full"
                     aria-label="Chart view"
                     aria-pressed={view === "chart"}
                     onClick={() => setView("chart")}
@@ -89,6 +90,7 @@ export function ChartShell({
                     type="button"
                     variant={view === "table" ? "secondary" : "ghost"}
                     size="icon-sm"
+                    className="rounded-full"
                     aria-label="Table view"
                     aria-pressed={view === "table"}
                     onClick={() => setView("table")}

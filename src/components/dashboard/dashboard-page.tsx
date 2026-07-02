@@ -8,7 +8,6 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { RefundTrendChart } from "@/components/dashboard/refund-trend-chart";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { SettlementTrendChart } from "@/components/dashboard/settlement-trend-chart";
-import { PageHeader } from "@/components/layout/page-header";
 import { useDashboardContext } from "@/components/providers/dashboard-provider";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useDashboardActivity } from "@/hooks/use-dashboard-activity";
@@ -45,11 +44,18 @@ export const DashboardPage = memo(function DashboardPage() {
   const errorMessage = analytics.error?.message;
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Dashboard"
-        description={`${getGreeting()}. Here is your payment health overview.`}
-      />
+    <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <header className="max-w-4xl space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          {getGreeting()}
+        </p>
+        <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          Your payments, settlements &amp; reconciliation health
+        </h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Everything moving through your store, settled and accounted for.
+        </p>
+      </header>
 
       <KpiGrid
         data={analytics.data}
@@ -94,7 +100,7 @@ export const DashboardPage = memo(function DashboardPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Quick Actions</h2>
+          <h2 className="font-retro text-2xl font-medium tracking-tight">Quick Actions</h2>
           <p className="text-sm text-muted-foreground">
             Jump to common tasks without leaving the dashboard
           </p>
