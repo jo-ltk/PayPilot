@@ -18,6 +18,8 @@ interface DateRangePickerProps {
   onChange: (range: DateRange) => void;
   className?: string;
   placeholder?: string;
+  /** "chip" mirrors the sidebar's icon-chip nav style; "default" is a plain outline trigger. */
+  variant?: "default" | "chip";
 }
 
 function formatRangeLabel(range: DateRange): string {
@@ -36,8 +38,10 @@ export function DateRangePicker({
   onChange,
   className,
   placeholder = "Select dates",
+  variant = "default",
 }: DateRangePickerProps) {
   const label = value.from || value.to ? formatRangeLabel(value) : placeholder;
+  const isChip = variant === "chip";
 
   return (
     <Popover>
@@ -48,13 +52,27 @@ export function DateRangePicker({
             className={cn(
               "w-full justify-start font-normal sm:w-[260px]",
               !value.from && "text-muted-foreground",
+              isChip &&
+                "retro-pill size-10 justify-center border-transparent p-0 sm:h-11 sm:w-auto sm:justify-start sm:gap-2.5 sm:pl-1.5 sm:pr-3",
               className,
             )}
           />
         }
       >
-        <CalendarIcon aria-hidden="true" className="size-4" />
-        <span>{label}</span>
+        {isChip ? (
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-blue)] text-[var(--retro-chart-strong)]">
+            <CalendarIcon aria-hidden="true" className="size-4" />
+          </span>
+        ) : (
+          <CalendarIcon aria-hidden="true" className="size-4" />
+        )}
+        <span
+          className={cn(
+            isChip && "hidden font-retro text-sm font-medium text-foreground sm:inline",
+          )}
+        >
+          {label}
+        </span>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

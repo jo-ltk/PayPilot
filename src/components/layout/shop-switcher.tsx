@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -45,13 +45,20 @@ export function ShopSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm" aria-label="Switch shop" />
+          <Button
+            variant="outline"
+            className="retro-pill size-10 justify-center border-transparent p-0 sm:h-11 sm:w-auto sm:justify-start sm:gap-2.5 sm:pl-1.5 sm:pr-3"
+            aria-label="Switch shop"
+          />
         }
       >
-        <span className="max-w-[120px] truncate sm:max-w-[160px]">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-yellow)] text-[var(--retro-chart-strong)]">
+          <Store aria-hidden="true" className="size-4" />
+        </span>
+        <span className="hidden max-w-[160px] truncate font-retro text-sm font-medium text-foreground sm:inline">
           {formatShopLabel(shopId, shopNameById.get(shopId))}
         </span>
-        <ChevronsUpDown aria-hidden="true" className="size-4 opacity-60" />
+        <ChevronsUpDown aria-hidden="true" className="hidden size-4 opacity-60 sm:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Shops</DropdownMenuLabel>

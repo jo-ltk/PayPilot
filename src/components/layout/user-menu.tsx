@@ -37,13 +37,15 @@ export function UserMenu() {
         render={
           <Button
             variant="outline"
-            size="icon-sm"
+            className="retro-pill size-10 border-transparent p-1 sm:size-11"
             aria-label="Open user menu"
           />
         }
       >
-        <Avatar size="sm">
-          <AvatarFallback>{initials}</AvatarFallback>
+        <Avatar className="bg-[var(--retro-chart-strong)] text-white">
+          <AvatarFallback className="bg-transparent font-retro text-sm font-semibold text-white">
+            {initials}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">

@@ -37,13 +37,21 @@ export function MobileSidebar({ items }: MobileSidebarProps) {
       >
         <Menu aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0">
-        <SheetHeader className="border-b border-border px-6 py-5 text-left">
-          <SheetTitle className="text-lg font-semibold tracking-tight">
-            PayPilot
-          </SheetTitle>
+      <SheetContent side="left" className="retro-sidebar w-72 p-0">
+        <SheetHeader className="flex-row items-center gap-3 border-b border-sidebar-border px-5 py-6 text-left">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--retro-chart-strong)] font-retro text-lg font-semibold text-white">
+            P
+          </span>
+          <div className="flex flex-col gap-0.5">
+            <SheetTitle className="font-retro text-xl font-medium tracking-tight">
+              PayPilot
+            </SheetTitle>
+            <p className="text-xs font-medium text-muted-foreground">
+              Payment reconciliation
+            </p>
+          </div>
         </SheetHeader>
-        <ScrollArea className="h-full px-4 py-4">
+        <ScrollArea className="h-full px-3 py-5">
           <SidebarNav
             items={items}
             onNavigate={() => {

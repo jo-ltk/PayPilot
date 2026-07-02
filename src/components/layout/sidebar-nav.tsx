@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { navIconMap } from "@/lib/navigation-icons";
 import type { NavItem } from "@/lib/navigation";
+import { getRetroChipColor } from "@/lib/retro-chip-colors";
 import { cn } from "@/lib/utils";
 
 interface SidebarNavProps {
@@ -44,10 +45,11 @@ export function SidebarNav({ items, onNavigate, className }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Main navigation" className={cn("flex flex-col gap-1", className)}>
-      {items.map((item) => {
+    <nav aria-label="Main navigation" className={cn("flex flex-col gap-1.5", className)}>
+      {items.map((item, index) => {
         const Icon = navIconMap[item.icon];
         const active = isActivePath(pathname, item.href);
+        const chipStyle = getRetroChipColor(index);
 
         return (
           <Link
@@ -56,13 +58,20 @@ export function SidebarNav({ items, onNavigate, className }: SidebarNavProps) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "group flex items-center gap-3 rounded-2xl px-3 py-2.5 font-retro text-base tracking-tight transition-all duration-150",
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                ? "bg-[var(--retro-chip)] font-medium text-foreground shadow-[0_0_0_1px_var(--retro-ink)]"
+                : "font-normal text-foreground/70 hover:translate-x-0.5 hover:bg-secondary/70 hover:text-foreground",
             )}
           >
-            <Icon aria-hidden="true" className="size-4 shrink-0" />
+            <span
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-150 group-hover:scale-105",
+                active ? "bg-[var(--retro-chart-strong)] text-white" : chipStyle,
+              )}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+            </span>
             <span>{item.label}</span>
           </Link>
         );

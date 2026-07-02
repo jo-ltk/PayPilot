@@ -182,11 +182,13 @@
 }
 
 /*
- * Retro dashboard theme — scoped to the dashboard page only.
- * Overrides shadcn CSS variables inside `.retro-dash` so shared
- * components pick up the light-blue palette without source edits.
+ * Retro theme — shared palette for dashboard page and sidebar shell.
+ * Overrides shadcn CSS variables so shared components pick up the
+ * light-blue palette without source edits.
  */
-.retro-dash {
+.retro-dash,
+.retro-shell,
+.retro-sidebar {
   --background: #f4f7fc;
   --foreground: #16233c;
   --card: #ffffff;
@@ -215,14 +217,34 @@
   --retro-chip-foreground: #1d63f2;
   --retro-chart-strong: #1d63f2;
   --retro-chart-soft: #7fa4f2;
+}
 
+.retro-dash {
   background: var(--background);
   color: var(--foreground);
 }
 
+.retro-shell {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.retro-sidebar {
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+}
+
 .retro-dash .font-retro,
 .retro-dash h1,
-.retro-dash h2 {
+.retro-dash h2,
+.retro-sidebar .font-retro {
   font-family: var(--font-poppins), var(--font-geist-sans), Arial, sans-serif;
   letter-spacing: -0.02em;
 }
@@ -245,4 +267,15 @@
 
 .retro-dash [data-slot="card-description"] {
   color: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+
+/* Pill-shaped action buttons used in the retro top bar. */
+.retro-pill {
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px var(--retro-ink);
+  background: var(--card);
+}
+
+.retro-pill:hover {
+  background: var(--secondary);
 }
