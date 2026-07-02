@@ -168,11 +168,13 @@ function buildRefunds(
         ? new Date(txn.occurredAt.getTime() + rng.int(1, 14) * 86400000)
         : null;
 
+    const refundId = `EZREFUND${String(refundIndex).padStart(5, "0")}`;
+
     refunds.push({
       id: `seed_refund_${refundIndex}`,
       shopId,
       transactionId: txn.id,
-      refundId: `EZREFUND${String(refundIndex).padStart(5, "0")}`,
+      refundId,
       amountPaise,
       status,
       shopifyRefundId:
@@ -180,16 +182,16 @@ function buildRefunds(
           ? `gid://shopify/Refund/${refundIndex}`
           : null,
       processedAt,
-      rawPayload: { refund_id: `EZREFUND${refundIndex}` },
+      rawPayload: { refund_id: refundId },
     });
 
     webhookEvents.push({
       id: `seed_webhook_refund_${refundIndex}`,
       source: WebhookSource.EASEBUZZ,
       eventType: "refund",
-      idempotencyKey: `easebuzz:refund:EZREFUND${refundIndex}:${status}`,
+      idempotencyKey: `easebuzz:refund:${refundId}:${status}`,
       shopId,
-      payload: { refund_id: `EZREFUND${refundIndex}`, status },
+      payload: { refund_id: refundId, status },
       status: WebhookStatus.PROCESSED,
       processedAt,
     });

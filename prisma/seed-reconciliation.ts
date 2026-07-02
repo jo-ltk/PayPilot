@@ -29,29 +29,35 @@ export function buildReconciliations(
   rng: Rng,
 ): void {
   let reconIndex = 1;
-  const txnByOrder = new Map(
-    transactions
-      .filter((t) => t.matchedOrderId)
-      .map((t) => [t.matchedOrderId!, t]),
-  );
+  const txnsByOrder = new Map<string, TransactionRow[]>();
+  for (const txn of transactions) {
+    if (!txn.matchedOrderId) {
+      continue;
+    }
+    const bucket = txnsByOrder.get(txn.matchedOrderId) ?? [];
+    bucket.push(txn);
+    txnsByOrder.set(txn.matchedOrderId, bucket);
+  }
   const refundedTxnIds = new Set(refunds.map((r) => r.transactionId));
 
   for (const order of orders) {
-    const txn = txnByOrder.get(order.id);
-    if (txn) {
-      reconciliations.push(
-        buildMatchedRecon(
-          shopId,
-          userId,
-          order,
-          txn,
-          reconIndex,
-          refunds,
-          refundedTxnIds,
-          rng,
-        ),
-      );
-      reconIndex += 1;
+    const matchedTxns = txnsByOrder.get(order.id) ?? [];
+    if (matchedTxns.length > 0) {
+      for (const txn of matchedTxns) {
+        reconciliations.push(
+          buildMatchedRecon(
+            shopId,
+            userId,
+            order,
+            txn,
+            reconIndex,
+            refunds,
+            refundedTxnIds,
+            rng,
+          ),
+        );
+        reconIndex += 1;
+      }
       continue;
     }
     reconciliations.push({

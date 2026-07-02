@@ -19,20 +19,6 @@ import { filterToolbarVariants, reducedMotionTransition } from "@/lib/animations
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-
-  if (hour < 12) {
-    return "Good morning";
-  }
-
-  if (hour < 17) {
-    return "Good afternoon";
-  }
-
-  return "Good evening";
-}
-
 const SETTINGS_TABS = [
   { value: "gateway", label: "Gateway", icon: CreditCard, chip: "bg-[var(--retro-blue)]" },
   { value: "team", label: "Team", icon: Users, chip: "bg-[var(--retro-mint)]" },
@@ -49,9 +35,6 @@ function SettingsPageShell({ children }: SettingsPageShellProps) {
   return (
     <div className="retro-dash -mx-4 -my-6 min-h-full space-y-8 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       <header className="max-w-4xl space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-          {getGreeting()}
-        </p>
         <h1 className="font-retro text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
           Settings
         </h1>

@@ -103,6 +103,40 @@ describe("buildSeedData integrity", () => {
     expect(statuses.has("MISSING_SHOPIFY")).toBe(true);
   });
 
+  it("reconciles every matched transaction, including duplicate payments", () => {
+    const matchedTxnIds = new Set(
+      data.transactions
+        .filter((txn) => txn.matchedOrderId)
+        .map((txn) => txn.id),
+    );
+    const reconciledTxnIds = new Set(
+      data.reconciliations
+        .map((recon) => recon.transactionId)
+        .filter((id): id is string => id !== null),
+    );
+
+    for (const txnId of matchedTxnIds) {
+      expect(reconciledTxnIds.has(txnId)).toBe(true);
+    }
+  });
+
+  it("keeps refund IDs aligned across records and webhook payloads", () => {
+    for (const refund of data.refunds) {
+      expect(refund.rawPayload.refund_id).toBe(refund.refundId);
+    }
+
+    const refundWebhooks = data.webhookEvents.filter(
+      (event) => event.eventType === "refund",
+    );
+    for (const event of refundWebhooks) {
+      const payload = event.payload as { refund_id: string };
+      const refundId = payload.refund_id;
+      const refund = data.refunds.find((row) => row.refundId === refundId);
+      expect(refund).toBeDefined();
+      expect(event.idempotencyKey).toContain(refundId);
+    }
+  });
+
   it("anchors transaction dates inside the last 90 days", () => {
     const ref = new Date("2026-07-03T12:00:00.000Z").getTime();
     const min = ref - 90 * 86400000;
