@@ -15,6 +15,8 @@ import { ShowcaseSection } from "@/components/landing/showcase-section";
 import { StatsSection } from "@/components/landing/stats-section";
 import { StorySection } from "@/components/landing/story-section";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
+import { resolveDashboardHref } from "@/lib/app-entry";
+import { getCurrentSession } from "@/lib/auth/require-shop-access";
 
 export const metadata: Metadata = {
   title: "PayPilot — Every rupee, reconciled. Automatically.",
@@ -23,12 +25,15 @@ export const metadata: Metadata = {
 };
 
 /** PayPilot marketing landing page. */
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await getCurrentSession();
+  const dashboardHref = resolveDashboardHref(session);
+
   return (
     <div className="pp-landing pp-noise relative min-h-screen overflow-x-clip">
-      <LandingNav />
+      <LandingNav dashboardHref={dashboardHref} />
       <main>
-        <HeroSection />
+        <HeroSection dashboardHref={dashboardHref} />
         <HeroTrustSection />
         <HeroPreviewSection />
         <ShowcaseSection />
@@ -39,7 +44,7 @@ export default function LandingPage() {
         <TestimonialsSection />
         <SecuritySection />
         <FaqSection />
-        <CtaSection />
+        <CtaSection dashboardHref={dashboardHref} />
       </main>
       <LandingFooter />
       <PaperPlane />

@@ -1,4 +1,5 @@
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { BrandMark } from "@/components/shared/brand-mark";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -17,18 +18,8 @@ export function DesktopSidebar({ items, className }: DesktopSidebarProps) {
         className,
       )}
     >
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-6">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--retro-chart-strong)] font-retro text-lg font-semibold text-white">
-          P
-        </span>
-        <div className="flex flex-col gap-0.5">
-          <span className="font-retro text-xl font-medium tracking-tight text-sidebar-foreground">
-            PayPilot
-          </span>
-          <span className="text-xs font-medium text-muted-foreground">
-            Payment reconciliation
-          </span>
-        </div>
+      <div className="border-b border-sidebar-border px-5 py-6">
+        <BrandMark href="/" subtitle="Payment reconciliation" />
       </div>
       <ScrollArea className="flex-1 px-3 py-5">
         <SidebarNav items={items} />

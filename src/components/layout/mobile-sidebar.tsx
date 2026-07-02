@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { BrandMark } from "@/components/shared/brand-mark";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -39,18 +40,13 @@ export function MobileSidebar({ items }: MobileSidebarProps) {
         </span>
       </SheetTrigger>
       <SheetContent side="left" className="retro-sidebar w-72 p-0">
-        <SheetHeader className="flex-row items-center gap-3 border-b border-sidebar-border px-5 py-6 text-left">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--retro-chart-strong)] font-retro text-lg font-semibold text-white">
-            P
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <SheetTitle className="font-retro text-xl font-medium tracking-tight">
-              PayPilot
-            </SheetTitle>
-            <p className="text-xs font-medium text-muted-foreground">
-              Payment reconciliation
-            </p>
-          </div>
+        <SheetHeader className="border-b border-sidebar-border px-5 py-6 text-left">
+          <SheetTitle className="sr-only">PayPilot navigation</SheetTitle>
+          <BrandMark
+            href="/"
+            subtitle="Payment reconciliation"
+            onClick={() => setOpen(false)}
+          />
         </SheetHeader>
         <ScrollArea className="h-full px-3 py-5">
           <SidebarNav

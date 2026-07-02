@@ -8,7 +8,7 @@ import { useRef } from "react";
 import { EASE_OUT_EXPO, Magnetic, Reveal } from "@/components/landing/motion-primitives";
 
 /** Closing CTA: oversized parallax wordmark with a magnetic action. */
-export function CtaSection() {
+export function CtaSection({ dashboardHref }: { dashboardHref: string }) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -46,7 +46,7 @@ export function CtaSection() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Magnetic strength={0.3}>
               <Link
-                href="/app"
+                href={dashboardHref}
                 className="group inline-flex h-14 items-center gap-3 rounded-full bg-(--pp-blue) px-9 text-base font-medium text-white shadow-[0_20px_45px_-14px_rgba(29,99,242,0.65)] transition-all duration-300 hover:bg-(--pp-blue-deep) hover:shadow-[0_26px_55px_-14px_rgba(29,99,242,0.75)]"
               >
                 Take flight with PayPilot

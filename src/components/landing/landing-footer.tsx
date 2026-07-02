@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/shared/brand-mark";
+
 const COLUMNS = [
   {
     heading: "Product",
@@ -46,13 +48,7 @@ export function LandingFooter() {
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-(--pp-blue) shadow-[0_6px_16px_-6px_rgba(29,99,242,0.6)]">
-                <span className="pp-display text-base font-semibold text-white">P</span>
-                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white ring-2 ring-(--pp-blue)" />
-              </span>
-              <span className="pp-display text-xl font-medium text-(--pp-ink)">PayPilot</span>
-            </div>
+            <BrandMark href="/" className="text-(--pp-ink)" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-(--pp-dim)">
               Payment analytics and settlement reconciliation for Shopify
               merchants who take their numbers seriously.

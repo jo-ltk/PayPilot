@@ -2,6 +2,7 @@ import { FileQuestion } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { APP_ENTRY_PATH } from "@/lib/app-entry";
 
 /** Global 404 page with navigation back to the app. */
 export default function NotFound() {
@@ -16,7 +17,7 @@ export default function NotFound() {
           The page you are looking for does not exist or may have been moved.
         </p>
       </div>
-      <Button render={<Link href="/app" />}>Go to dashboard</Button>
+      <Button render={<Link href={APP_ENTRY_PATH} />}>Go to dashboard</Button>
     </main>
   );
 }

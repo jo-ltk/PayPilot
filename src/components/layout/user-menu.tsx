@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Globe } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -59,10 +60,17 @@ export function UserMenu() {
         ) : null}
         <DropdownMenuSeparator />
         {mode === "standalone" ? (
-          <DropdownMenuItem onClick={() => void handleLogout()}>
-            <LogOut aria-hidden="true" className="size-4" />
-            Sign out
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem render={<Link href="/" />}>
+              <Globe aria-hidden="true" className="size-4" />
+              Back to website
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => void handleLogout()}>
+              <LogOut aria-hidden="true" className="size-4" />
+              Sign out
+            </DropdownMenuItem>
+          </>
         ) : (
           <DropdownMenuItem disabled>
             <User aria-hidden="true" className="size-4" />

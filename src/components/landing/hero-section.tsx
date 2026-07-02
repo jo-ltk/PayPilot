@@ -23,7 +23,7 @@ function HeadlineLine({ children, index }: { children: React.ReactNode; index: n
 }
 
 /** Full-viewport hero: full-bleed background, two-column copy + statue visual. */
-export function HeroSection() {
+export function HeroSection({ dashboardHref }: { dashboardHref: string }) {
   return (
     <section className="relative w-full overflow-hidden bg-(--pp-surface)">
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
@@ -98,7 +98,7 @@ export function HeroSection() {
             >
               <Magnetic strength={0.3} className="w-full sm:w-auto">
                 <Link
-                  href="/app"
+                  href={dashboardHref}
                   className="group flex h-12 w-full items-center justify-center gap-2.5 rounded-full bg-(--pp-blue) px-7 text-[15px] font-medium text-white shadow-[0_18px_40px_-14px_rgba(29,99,242,0.65)] transition-all duration-300 hover:bg-(--pp-blue-deep) hover:shadow-[0_22px_50px_-14px_rgba(29,99,242,0.75)] sm:inline-flex sm:w-auto"
                 >
                   Start reconciling free

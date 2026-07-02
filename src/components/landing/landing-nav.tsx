@@ -114,7 +114,7 @@ function MobileNavPanel({
 }
 
 /** Fixed glass navigation bar that condenses on scroll. */
-export function LandingNav() {
+export function LandingNav({ dashboardHref }: { dashboardHref: string }) {
   const { scrollY } = useScroll();
   const [menuOpen, setMenuOpen] = useState(false);
   const clicks = useRef(0);
@@ -184,7 +184,7 @@ export function LandingNav() {
 
             <Magnetic strength={0.35} className="hidden sm:block">
               <Link
-                href="/app"
+                href={dashboardHref}
                 className="group inline-flex h-9 items-center gap-2 rounded-full bg-(--pp-blue)/95 px-4 text-[13px] font-medium text-white shadow-[0_10px_28px_-10px_rgba(29,99,242,0.75),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-sm transition-all duration-300 hover:bg-(--pp-blue-deep) hover:shadow-[0_14px_36px_-10px_rgba(29,99,242,0.9),inset_0_1px_0_rgba(255,255,255,0.3)]"
               >
                 Get started
@@ -195,7 +195,7 @@ export function LandingNav() {
             </Magnetic>
 
             <Link
-              href="/app"
+              href={dashboardHref}
               className="inline-flex h-9 items-center rounded-full bg-(--pp-blue)/95 px-4 text-[13px] font-medium text-white shadow-[0_10px_24px_-10px_rgba(29,99,242,0.7),inset_0_1px_0_rgba(255,255,255,0.2)] sm:hidden"
             >
               Start

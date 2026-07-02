@@ -16,25 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginUser } from "@/lib/auth-client";
+import { resolvePostLoginPath } from "@/lib/app-entry";
 
 interface LoginFormProps {
   redirectTo?: string;
-}
-
-function resolveRedirectPath(
-  shops: { shopId: string }[],
-  redirectTo?: string,
-): string {
-  if (redirectTo?.startsWith("/shops/")) {
-    return redirectTo;
-  }
-
-  const firstShop = shops[0];
-  if (!firstShop) {
-    throw new Error("No shop memberships found for this account");
-  }
-
-  return `/shops/${firstShop.shopId}`;
 }
 
 /** Standalone finance portal login form wired to POST /api/auth/login. */
@@ -52,7 +37,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
 
     try {
       const result = await loginUser({ email, password });
-      const destination = resolveRedirectPath(result.shops, redirectTo);
+      const destination = resolvePostLoginPath(result.shops, redirectTo);
       toast.success("Signed in successfully");
       router.replace(destination);
       router.refresh();
@@ -69,9 +54,9 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Sign in to PayPilot</CardTitle>
+        <CardTitle>Sign in</CardTitle>
         <CardDescription>
-          Finance portal access for reconciliation teams.
+          Use your PayPilot account to access the dashboard.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
