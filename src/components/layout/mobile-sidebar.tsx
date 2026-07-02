@@ -29,13 +29,14 @@ export function MobileSidebar({ items }: MobileSidebarProps) {
         render={
           <Button
             variant="outline"
-            size="icon-sm"
-            className="lg:hidden"
+            className="retro-pill size-10 justify-center border-transparent p-0 lg:hidden"
             aria-label="Open navigation menu"
           />
         }
       >
-        <Menu aria-hidden="true" />
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--retro-lilac)] text-[var(--retro-chart-strong)]">
+          <Menu aria-hidden="true" className="size-4" />
+        </span>
       </SheetTrigger>
       <SheetContent side="left" className="retro-sidebar w-72 p-0">
         <SheetHeader className="flex-row items-center gap-3 border-b border-sidebar-border px-5 py-6 text-left">
