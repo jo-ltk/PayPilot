@@ -29,11 +29,17 @@ const mockSettings = {
   gateway: {
     id: "gw-1",
     provider: "EASEBUZZ",
-    keyMasked: "****1234",
-    saltMasked: "****5678",
-    merchantEmail: "merchant@example.com",
+    credentialsMasked: {
+      key: "****1234",
+      salt: "****5678",
+      merchantEmail: "merchant@example.com",
+    },
     environment: "SANDBOX",
     isActive: true,
+    connectionStatus: "CONNECTED",
+    webhookHealth: "HEALTHY",
+    connectedAt: null,
+    lastWebhookAt: null,
   },
   matching: {
     strategy: "UDF_ORDER_ID",

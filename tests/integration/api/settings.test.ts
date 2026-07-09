@@ -1,30 +1,46 @@
 import {
+  ConnectionStatus,
   GatewayEnvironment,
   GatewayProvider,
   MatchingStrategy,
   Role,
+  WebhookHealth,
 } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { cookiesMock } = vi.hoisted(() => ({ cookiesMock: vi.fn() }));
-const { gatewayFindFirst, gatewayUpdate, matchingFindUnique, matchingUpsert } =
-  vi.hoisted(() => ({
-    gatewayFindFirst: vi.fn(),
-    gatewayUpdate: vi.fn(),
-    matchingFindUnique: vi.fn(),
-    matchingUpsert: vi.fn(),
-  }));
+const {
+  gatewayFindUnique,
+  gatewayUpdate,
+  gatewayCreate,
+  matchingFindUnique,
+  matchingUpsert,
+  auditCreate,
+} = vi.hoisted(() => ({
+  gatewayFindUnique: vi.fn(),
+  gatewayUpdate: vi.fn(),
+  gatewayCreate: vi.fn(),
+  matchingFindUnique: vi.fn(),
+  matchingUpsert: vi.fn(),
+  auditCreate: vi.fn(),
+}));
 
 vi.mock("next/headers", () => ({ cookies: cookiesMock }));
 vi.mock("@/lib/db", () => ({
   prisma: {
-    paymentGateway: { findFirst: gatewayFindFirst, update: gatewayUpdate },
+    paymentGateway: {
+      findUnique: gatewayFindUnique,
+      update: gatewayUpdate,
+      create: gatewayCreate,
+    },
     matchingConfig: { findUnique: matchingFindUnique, upsert: matchingUpsert },
+    integrationAuditLog: { create: auditCreate },
   },
 }));
 
 import { GET, PATCH } from "@/app/api/shops/[shopId]/settings/route";
-import { encrypt } from "@/lib/crypto/encrypt";
+import { encryptCredentials } from "@/lib/gateways/credentials";
+import "@/lib/gateways/index";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/auth/standalone";
 import type { Session } from "@/schemas/auth.schema";
 
@@ -57,25 +73,46 @@ const gatewayRecord = {
   id: "g1",
   shopId: "s1",
   provider: GatewayProvider.EASEBUZZ,
-  key: encrypt("merchant-key-1234"),
-  salt: encrypt("merchant-salt-5678"),
-  merchantEmail: "merchant@example.com",
+  credentials: encryptCredentials({
+    key: "merchant-key-1234",
+    salt: "merchant-salt-5678",
+    merchantEmail: "merchant@example.com",
+  }),
+  webhookSecret: null,
+  webhookVersion: null,
   environment: GatewayEnvironment.SANDBOX,
+  connectionStatus: ConnectionStatus.CONNECTED,
+  webhookHealth: WebhookHealth.HEALTHY,
   isActive: true,
+  connectedAt: new Date(),
+  disconnectedAt: null,
+  lastWebhookAt: null,
+  lastSuccessfulWebhookAt: null,
+  lastFailedWebhookAt: null,
+  lastSyncAt: null,
+  lastSettlementImportAt: null,
+  lastRefundImportAt: null,
+  lastFailedEventAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const validGateway = {
-  key: "plain-key",
-  salt: "plain-salt",
-  merchantEmail: "merchant@example.com",
+  credentials: {
+    key: "plain-key",
+    salt: "plain-salt",
+    merchantEmail: "merchant@example.com",
+  },
   environment: GatewayEnvironment.SANDBOX,
 };
 
 beforeEach(() => {
-  gatewayFindFirst.mockResolvedValue(gatewayRecord);
+  gatewayFindUnique.mockResolvedValue(gatewayRecord);
   gatewayUpdate.mockResolvedValue(undefined);
+  gatewayCreate.mockResolvedValue({ id: "g1" });
   matchingFindUnique.mockResolvedValue(null);
   matchingUpsert.mockResolvedValue(undefined);
+  auditCreate.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -90,7 +127,7 @@ describe("GET /api/shops/[shopId]/settings", () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.gateway.keyMasked).toBe("****1234");
+    expect(json.data.gateway.credentialsMasked.key).toBe("****1234");
     expect(JSON.stringify(json)).not.toContain("merchant-key-1234");
   });
 

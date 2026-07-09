@@ -1,39 +1,45 @@
 import {
+  ConnectionStatus,
   GatewayEnvironment,
   GatewayProvider,
   MatchingStrategy,
+  WebhookHealth,
 } from "@prisma/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const {
-  gatewayFindFirst,
+  gatewayFindUnique,
   gatewayFindMany,
   gatewayUpdate,
   gatewayCreate,
   matchingFindUnique,
   matchingUpsert,
+  auditCreate,
 } = vi.hoisted(() => ({
-  gatewayFindFirst: vi.fn(),
+  gatewayFindUnique: vi.fn(),
   gatewayFindMany: vi.fn(),
   gatewayUpdate: vi.fn(),
   gatewayCreate: vi.fn(),
   matchingFindUnique: vi.fn(),
   matchingUpsert: vi.fn(),
+  auditCreate: vi.fn(),
 }));
 
 vi.mock("@/lib/db", () => ({
   prisma: {
     paymentGateway: {
-      findFirst: gatewayFindFirst,
+      findUnique: gatewayFindUnique,
       findMany: gatewayFindMany,
       update: gatewayUpdate,
       create: gatewayCreate,
     },
     matchingConfig: { findUnique: matchingFindUnique, upsert: matchingUpsert },
+    integrationAuditLog: { create: auditCreate },
   },
 }));
 
-import { encrypt } from "@/lib/crypto/encrypt";
+import { encryptCredentials } from "@/lib/gateways/credentials";
+import "@/lib/gateways/index";
 import {
   getGatewayCredentials,
   getGatewayIdForShop,
@@ -43,17 +49,34 @@ import {
   updateSettings,
 } from "@/lib/services/settings.service";
 
-/** Builds a stored gateway record with encrypted secrets. */
+/** Builds a stored gateway record with encrypted credentials JSON. */
 function storedGateway() {
   return {
     id: "g1",
     shopId: "s1",
     provider: GatewayProvider.EASEBUZZ,
-    key: encrypt("merchant-key-abcd"),
-    salt: encrypt("merchant-salt-wxyz"),
-    merchantEmail: "merchant@example.com",
+    credentials: encryptCredentials({
+      key: "merchant-key-abcd",
+      salt: "merchant-salt-wxyz",
+      merchantEmail: "merchant@example.com",
+    }),
+    webhookSecret: null,
+    webhookVersion: null,
     environment: GatewayEnvironment.SANDBOX,
+    connectionStatus: ConnectionStatus.CONNECTED,
+    webhookHealth: WebhookHealth.HEALTHY,
     isActive: true,
+    connectedAt: new Date(),
+    disconnectedAt: null,
+    lastWebhookAt: null,
+    lastSuccessfulWebhookAt: null,
+    lastFailedWebhookAt: null,
+    lastSyncAt: null,
+    lastSettlementImportAt: null,
+    lastRefundImportAt: null,
+    lastFailedEventAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 }
 
@@ -73,18 +96,18 @@ describe("maskSecret", () => {
 
 describe("getSettings", () => {
   it("returns masked secrets, never plaintext", async () => {
-    gatewayFindFirst.mockResolvedValue(storedGateway());
+    gatewayFindUnique.mockResolvedValue(storedGateway());
     matchingFindUnique.mockResolvedValue(null);
 
     const settings = await getSettings("s1");
 
-    expect(settings.gateway?.keyMasked).toBe("****abcd");
-    expect(settings.gateway?.saltMasked).toBe("****wxyz");
+    expect(settings.gateway?.credentialsMasked.key).toBe("****abcd");
+    expect(settings.gateway?.credentialsMasked.salt).toBe("****wxyz");
     expect(JSON.stringify(settings)).not.toContain("merchant-key-abcd");
   });
 
   it("returns nulls when nothing is configured", async () => {
-    gatewayFindFirst.mockResolvedValue(null);
+    gatewayFindUnique.mockResolvedValue(null);
     matchingFindUnique.mockResolvedValue(null);
 
     const settings = await getSettings("s1");
@@ -94,27 +117,30 @@ describe("getSettings", () => {
 });
 
 describe("updateSettings", () => {
-  it("encrypts key and salt at rest when creating a gateway", async () => {
-    gatewayFindFirst.mockResolvedValueOnce(null).mockResolvedValue(storedGateway());
-    gatewayCreate.mockResolvedValue(undefined);
+  it("encrypts credentials JSON at rest when creating a gateway", async () => {
+    gatewayFindUnique.mockResolvedValueOnce(null).mockResolvedValue(storedGateway());
+    gatewayCreate.mockResolvedValue({ id: "g1" });
     matchingFindUnique.mockResolvedValue(null);
+    auditCreate.mockResolvedValue(undefined);
 
     await updateSettings("s1", {
       gateway: {
-        key: "plain-key",
-        salt: "plain-salt",
-        merchantEmail: "merchant@example.com",
+        credentials: {
+          key: "plain-key",
+          salt: "plain-salt",
+          merchantEmail: "merchant@example.com",
+        },
         environment: GatewayEnvironment.SANDBOX,
       },
     });
 
     const data = gatewayCreate.mock.calls[0][0].data;
-    expect(data.key).not.toBe("plain-key");
-    expect(data.salt).not.toBe("plain-salt");
+    expect(data.credentials).not.toContain("plain-key");
+    expect(auditCreate).toHaveBeenCalled();
   });
 
   it("upserts matching config", async () => {
-    gatewayFindFirst.mockResolvedValue(null);
+    gatewayFindUnique.mockResolvedValue(null);
     matchingFindUnique.mockResolvedValue(null);
     matchingUpsert.mockResolvedValue(undefined);
 
@@ -134,26 +160,27 @@ describe("updateSettings", () => {
 
 describe("getGatewayCredentials", () => {
   it("decrypts stored credentials", async () => {
-    gatewayFindFirst.mockResolvedValue(storedGateway());
+    gatewayFindUnique.mockResolvedValue(storedGateway());
     const creds = await getGatewayCredentials("s1");
     expect(creds.key).toBe("merchant-key-abcd");
     expect(creds.salt).toBe("merchant-salt-wxyz");
   });
 
   it("throws when no gateway is configured", async () => {
-    gatewayFindFirst.mockResolvedValue(null);
+    gatewayFindUnique.mockResolvedValue(null);
     await expect(getGatewayCredentials("s1")).rejects.toThrow();
   });
 });
 
 describe("resolveGatewayByKey", () => {
-  it("matches an active gateway by its decrypted key and returns the salt", async () => {
+  it("matches an active gateway by its decrypted key", async () => {
     gatewayFindMany.mockResolvedValue([storedGateway()]);
     const resolved = await resolveGatewayByKey("merchant-key-abcd");
     expect(resolved).toEqual({
       id: "g1",
       shopId: "s1",
-      salt: "merchant-salt-wxyz",
+      provider: GatewayProvider.EASEBUZZ,
+      verificationSecret: "merchant-salt-wxyz",
     });
   });
 
@@ -165,12 +192,12 @@ describe("resolveGatewayByKey", () => {
 
 describe("getGatewayIdForShop", () => {
   it("returns the gateway id when configured", async () => {
-    gatewayFindFirst.mockResolvedValue(storedGateway());
+    gatewayFindUnique.mockResolvedValue(storedGateway());
     expect(await getGatewayIdForShop("s1")).toBe("g1");
   });
 
   it("returns null when not configured", async () => {
-    gatewayFindFirst.mockResolvedValue(null);
+    gatewayFindUnique.mockResolvedValue(null);
     expect(await getGatewayIdForShop("s1")).toBeNull();
   });
 });

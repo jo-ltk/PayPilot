@@ -1,30 +1,16 @@
 import { Prisma } from "@prisma/client";
 
 import { WebhookVerificationError } from "@/lib/api/errors";
+import { paymentGatewayRegistry } from "@/lib/gateways/index";
+import { findShopGateway } from "@/lib/gateways/gateway-persistence";
 import { prisma } from "@/lib/db";
-import {
-  easebuzzIdempotencyKey,
-  parseFormBody,
-  verifyEasebuzzHash,
-  type EasebuzzWebhookKind,
-  type EasebuzzWebhookPayload,
-} from "@/lib/easebuzz/webhooks";
 import { inngest } from "@/lib/inngest/client";
+import {
+  recordWebhookFailure,
+  recordWebhookSuccess,
+} from "@/lib/services/gateway-sync.service";
 import { deactivateShop } from "@/lib/services/shop.service";
 import { mapWebhookOrder, upsertOrder } from "@/lib/services/order.service";
-import { mapRefundPayload, upsertRefund } from "@/lib/services/refund.service";
-import {
-  mapSettlementPayload,
-  upsertSettlement,
-} from "@/lib/services/settlement.service";
-import {
-  getGatewayIdForShop,
-  resolveGatewayByKey,
-} from "@/lib/services/settings.service";
-import {
-  mapTransactionPayload,
-  upsertTransaction,
-} from "@/lib/services/transaction.service";
 
 export type ShopifyWebhookInput = {
   topic: string;
@@ -33,8 +19,16 @@ export type ShopifyWebhookInput = {
   rawBody: string;
 };
 
+export type ProviderWebhookInput = {
+  provider: "EASEBUZZ" | "RAZORPAY" | "CASHFREE";
+  eventType: string;
+  rawBody: string;
+  headers: Headers;
+};
+
+/** @deprecated Use ProviderWebhookInput — kept for Easebuzz route compatibility. */
 export type EasebuzzWebhookInput = {
-  kind: EasebuzzWebhookKind;
+  kind: "transaction" | "payout" | "refund";
   rawBody: string;
 };
 
@@ -75,9 +69,6 @@ async function recordWebhookEvent(
 
 /**
  * Persists an incoming Shopify webhook and enqueues async processing.
- *
- * Verification must happen before calling this. New deliveries enqueue an
- * Inngest job; duplicates are skipped (idempotent).
  * @param input - Verified webhook headers plus raw body
  * @returns Whether the delivery was a duplicate
  */
@@ -138,7 +129,6 @@ async function routeShopifyTopic(
 /**
  * Processes a persisted webhook event, updating its status lifecycle.
  * @param eventId - WebhookEvent id to process
- * @throws {Error} Re-throws processing failures after marking the event FAILED
  */
 export async function processShopifyWebhook(eventId: string): Promise<void> {
   const event = await prisma.webhookEvent.update({
@@ -168,32 +158,39 @@ export async function processShopifyWebhook(eventId: string): Promise<void> {
 }
 
 /**
- * Verifies and persists an incoming Easebuzz webhook, then enqueues processing.
- *
- * Resolves the shop from the merchant key, verifies the hash (both before any
- * write), records the event idempotently, and enqueues async processing for
- * new deliveries.
- * @param input - Webhook channel plus raw form-urlencoded body
+ * Verifies and persists an incoming provider webhook via the adapter registry.
+ * @param input - Provider, event type, raw body, and headers
  * @returns Whether the delivery was a duplicate
- * @throws {WebhookVerificationError} When the key is unknown or the hash fails
  */
-export async function handleEasebuzzWebhook(
-  input: EasebuzzWebhookInput,
+export async function handleProviderWebhook(
+  input: ProviderWebhookInput,
 ): Promise<{ duplicate: boolean }> {
-  const payload = parseFormBody(input.rawBody);
-  const gateway = await resolveGatewayByKey(payload.key ?? "");
-  if (!gateway) {
+  const adapter = paymentGatewayRegistry.get(input.provider);
+  const resolved = await adapter.resolveWebhookTarget(
+    input.rawBody,
+    input.headers,
+    input.eventType,
+  );
+  if (!resolved) {
     throw new WebhookVerificationError();
   }
-  if (!verifyEasebuzzHash(input.kind, payload, gateway.salt)) {
+  if (
+    !adapter.verifyWebhook(
+      input.rawBody,
+      input.headers,
+      resolved.verificationSecret,
+      input.eventType,
+    )
+  ) {
     throw new WebhookVerificationError();
   }
 
+  const payload = adapter.parseWebhookPayload(input.rawBody);
   const { id, duplicate } = await recordWebhookEvent({
-    source: "EASEBUZZ",
-    eventType: input.kind,
-    idempotencyKey: easebuzzIdempotencyKey(input.kind, payload),
-    shopId: gateway.shopId,
+    source: input.provider,
+    eventType: input.eventType,
+    idempotencyKey: adapter.buildIdempotencyKey(input.eventType, payload),
+    shopId: resolved.shopId,
     payload: payload as Prisma.InputJsonValue,
   });
 
@@ -208,35 +205,24 @@ export async function handleEasebuzzWebhook(
 }
 
 /**
- * Routes a persisted Easebuzz webhook payload to its domain handler.
- * @param shopId - Resolved shop id
- * @param kind - Webhook channel
- * @param payload - Stored webhook payload
+ * Verifies and persists an incoming Easebuzz webhook.
+ * @param input - Webhook channel plus raw form-urlencoded body
+ * @returns Whether the delivery was a duplicate
  */
-async function routeEasebuzzEvent(
-  shopId: string,
-  kind: EasebuzzWebhookKind,
-  payload: EasebuzzWebhookPayload,
-): Promise<void> {
-  if (kind === "refund") {
-    await upsertRefund(shopId, mapRefundPayload(payload));
-    return;
-  }
-  const gatewayId = await getGatewayIdForShop(shopId);
-  if (!gatewayId) {
-    return;
-  }
-  if (kind === "transaction") {
-    await upsertTransaction(shopId, gatewayId, mapTransactionPayload(payload));
-    return;
-  }
-  await upsertSettlement(shopId, gatewayId, mapSettlementPayload(payload));
+export async function handleEasebuzzWebhook(
+  input: EasebuzzWebhookInput,
+): Promise<{ duplicate: boolean }> {
+  return handleProviderWebhook({
+    provider: "EASEBUZZ",
+    eventType: input.kind,
+    rawBody: input.rawBody,
+    headers: new Headers(),
+  });
 }
 
 /**
- * Processes a persisted Easebuzz webhook event, updating its status lifecycle.
+ * Processes a persisted Easebuzz webhook event via the adapter registry.
  * @param eventId - WebhookEvent id to process
- * @throws {Error} Re-throws processing failures after marking the event FAILED
  */
 export async function processEasebuzzWebhook(eventId: string): Promise<void> {
   const event = await prisma.webhookEvent.update({
@@ -244,18 +230,28 @@ export async function processEasebuzzWebhook(eventId: string): Promise<void> {
     data: { status: "PROCESSING" },
   });
 
+  const gateway =
+    event.shopId && event.source === "EASEBUZZ"
+      ? await findShopGateway(event.shopId, "EASEBUZZ")
+      : null;
+
   try {
-    if (event.shopId) {
-      await routeEasebuzzEvent(
-        event.shopId,
-        event.eventType as EasebuzzWebhookKind,
-        event.payload as EasebuzzWebhookPayload,
-      );
+    if (event.shopId && event.source !== "SHOPIFY") {
+      const adapter = paymentGatewayRegistry.get(event.source);
+      await adapter.processWebhook({
+        shopId: event.shopId,
+        gatewayId: gateway?.id ?? "",
+        eventType: event.eventType,
+        payload: event.payload,
+      });
     }
     await prisma.webhookEvent.update({
       where: { id: eventId },
       data: { status: "PROCESSED", processedAt: new Date() },
     });
+    if (gateway) {
+      await recordWebhookSuccess(gateway.id, event.eventType);
+    }
     if (event.shopId) {
       await inngest.send({
         name: "reconciliation/run",
@@ -263,6 +259,9 @@ export async function processEasebuzzWebhook(eventId: string): Promise<void> {
       });
     }
   } catch (error) {
+    if (gateway) {
+      await recordWebhookFailure(gateway.id);
+    }
     await prisma.webhookEvent.update({
       where: { id: eventId },
       data: { status: "FAILED", error: String(error) },

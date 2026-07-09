@@ -1,9 +1,21 @@
-import { GatewayProvider, type PaymentGateway } from "@prisma/client";
+import {
+  ConnectionStatus,
+  GatewayProvider,
+  type PaymentGateway,
+} from "@prisma/client";
 
 import { NotFoundError } from "@/lib/api/errors";
-import { decrypt, encrypt } from "@/lib/crypto/encrypt";
+import { encrypt } from "@/lib/crypto/encrypt";
+import {
+  decryptCredentials,
+  encryptCredentials,
+  maskCredentialRecord,
+} from "@/lib/gateways/credentials";
+import { findShopGateway } from "@/lib/gateways/gateway-persistence";
+import { paymentGatewayRegistry } from "@/lib/gateways/index";
 import { prisma } from "@/lib/db";
 import type { EasebuzzCredentials } from "@/lib/easebuzz/types";
+import { logIntegrationAction } from "@/lib/services/integration-audit.service";
 import {
   matchingConfigViewSchema,
   type MaskedGateway,
@@ -30,14 +42,19 @@ export function maskSecret(value: string): string {
  * @returns Masked gateway view
  */
 function toMaskedGateway(gateway: PaymentGateway): MaskedGateway {
+  const adapter = paymentGatewayRegistry.get(gateway.provider);
+  const credentials = decryptCredentials(gateway.credentials);
+
   return {
     id: gateway.id,
     provider: gateway.provider,
-    keyMasked: maskSecret(decrypt(gateway.key)),
-    saltMasked: maskSecret(decrypt(gateway.salt)),
-    merchantEmail: gateway.merchantEmail,
+    credentialsMasked: adapter.maskCredentials(credentials),
     environment: gateway.environment,
     isActive: gateway.isActive,
+    connectionStatus: gateway.connectionStatus,
+    webhookHealth: gateway.webhookHealth,
+    connectedAt: gateway.connectedAt?.toISOString() ?? null,
+    lastWebhookAt: gateway.lastWebhookAt?.toISOString() ?? null,
   };
 }
 
@@ -56,16 +73,7 @@ function toMatchingView(config: {
   return matchingConfigViewSchema.parse(config);
 }
 
-/**
- * Finds the Easebuzz gateway configured for a shop.
- * @param shopId - Target shop id
- * @returns The gateway record, or null when not configured
- */
-async function findGateway(shopId: string): Promise<PaymentGateway | null> {
-  return prisma.paymentGateway.findFirst({
-    where: { shopId, provider: GatewayProvider.EASEBUZZ },
-  });
-}
+const DEFAULT_PROVIDER = GatewayProvider.EASEBUZZ;
 
 /**
  * Reads a shop's settings with gateway secrets masked.
@@ -74,7 +82,7 @@ async function findGateway(shopId: string): Promise<PaymentGateway | null> {
  */
 export async function getSettings(shopId: string): Promise<SettingsResponse> {
   const [gateway, matching] = await Promise.all([
-    findGateway(shopId),
+    findShopGateway(shopId, DEFAULT_PROVIDER),
     prisma.matchingConfig.findUnique({ where: { shopId } }),
   ]);
 
@@ -85,7 +93,7 @@ export async function getSettings(shopId: string): Promise<SettingsResponse> {
 }
 
 /**
- * Persists a gateway update, encrypting key/salt at rest.
+ * Persists a gateway update with encrypted credentials JSON.
  * @param shopId - Target shop id
  * @param input - Validated gateway payload
  */
@@ -93,21 +101,43 @@ async function saveGateway(
   shopId: string,
   input: NonNullable<SettingsUpdateInput["gateway"]>,
 ): Promise<void> {
+  const provider = input.provider ?? DEFAULT_PROVIDER;
+  const adapter = paymentGatewayRegistry.get(provider);
+  const credentials = adapter.getCredentialSchema().parse(input.credentials);
+
   const data = {
-    key: encrypt(input.key),
-    salt: encrypt(input.salt),
-    merchantEmail: input.merchantEmail,
+    credentials: encryptCredentials(credentials),
     environment: input.environment,
     isActive: input.isActive ?? true,
+    connectionStatus: ConnectionStatus.CONNECTED,
+    connectedAt: new Date(),
+    disconnectedAt: null,
   };
-  const existing = await findGateway(shopId);
+
+  const existing = await findShopGateway(shopId, provider);
 
   if (existing) {
     await prisma.paymentGateway.update({ where: { id: existing.id }, data });
+    await logIntegrationAction({
+      shopId,
+      gatewayId: existing.id,
+      provider,
+      action: "CONNECT",
+      metadata: { environment: input.environment },
+    });
     return;
   }
-  await prisma.paymentGateway.create({
-    data: { shopId, provider: GatewayProvider.EASEBUZZ, ...data },
+
+  const created = await prisma.paymentGateway.create({
+    data: { shopId, provider, ...data },
+  });
+
+  await logIntegrationAction({
+    shopId,
+    gatewayId: created.id,
+    provider,
+    action: "CONNECT",
+    metadata: { environment: input.environment },
   });
 }
 
@@ -146,29 +176,37 @@ export async function updateSettings(
   return getSettings(shopId);
 }
 
-/** A gateway resolved from a webhook's merchant key, with decrypted salt. */
-export type ResolvedGateway = { id: string; shopId: string; salt: string };
+/** A gateway resolved from a webhook lookup, with verification secret. */
+export type ResolvedGateway = {
+  id: string;
+  shopId: string;
+  provider: GatewayProvider;
+  verificationSecret: string;
+};
 
 /**
  * Resolves the active Easebuzz gateway matching a webhook's merchant `key`.
- *
- * Stored keys are encrypted with a random IV, so they cannot be queried
- * directly; active gateways are scanned and their decrypted keys compared.
  * @param key - Plaintext merchant key from the webhook payload
  * @returns The matching gateway with decrypted salt, or null when none match
  */
 export async function resolveGatewayByKey(
   key: string,
 ): Promise<ResolvedGateway | null> {
-  const gateways = await prisma.paymentGateway.findMany({
-    where: { provider: GatewayProvider.EASEBUZZ, isActive: true },
-  });
-  for (const gateway of gateways) {
-    if (decrypt(gateway.key) === key) {
-      return { id: gateway.id, shopId: gateway.shopId, salt: decrypt(gateway.salt) };
-    }
+  const adapter = paymentGatewayRegistry.get(GatewayProvider.EASEBUZZ);
+  const resolved = await adapter.resolveWebhookTarget(
+    new URLSearchParams({ key }).toString(),
+    new Headers(),
+    "transaction",
+  );
+  if (!resolved) {
+    return null;
   }
-  return null;
+  return {
+    id: resolved.gatewayId,
+    shopId: resolved.shopId,
+    provider: GatewayProvider.EASEBUZZ,
+    verificationSecret: resolved.verificationSecret,
+  };
 }
 
 /**
@@ -179,7 +217,7 @@ export async function resolveGatewayByKey(
 export async function getGatewayIdForShop(
   shopId: string,
 ): Promise<string | null> {
-  const gateway = await findGateway(shopId);
+  const gateway = await findShopGateway(shopId, DEFAULT_PROVIDER);
   return gateway?.id ?? null;
 }
 
@@ -192,14 +230,24 @@ export async function getGatewayIdForShop(
 export async function getGatewayCredentials(
   shopId: string,
 ): Promise<EasebuzzCredentials> {
-  const gateway = await findGateway(shopId);
+  const gateway = await findShopGateway(shopId, DEFAULT_PROVIDER);
   if (!gateway) {
     throw new NotFoundError("Gateway not configured for this shop");
   }
+  const credentials = decryptCredentials(gateway.credentials);
   return {
-    key: decrypt(gateway.key),
-    salt: decrypt(gateway.salt),
-    merchantEmail: gateway.merchantEmail,
+    key: credentials.key,
+    salt: credentials.salt,
+    merchantEmail: credentials.merchantEmail,
     environment: gateway.environment,
   };
+}
+
+/**
+ * Encrypts a webhook secret for at-rest storage.
+ * @param secret - Plaintext webhook secret
+ * @returns Encrypted secret string
+ */
+export function encryptWebhookSecret(secret: string): string {
+  return encrypt(secret);
 }

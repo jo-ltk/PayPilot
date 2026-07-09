@@ -49,7 +49,7 @@ describe("useSettings", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data?.gateway?.keyMasked).toBe("****1234");
+    expect(result.current.data?.gateway?.credentialsMasked.key).toBe("****1234");
     expect(JSON.stringify(result.current.data)).not.toContain("plain-key");
   });
 });

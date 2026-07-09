@@ -1,4 +1,4 @@
-import { GatewayEnvironment, MatchingStrategy } from "@prisma/client";
+import { GatewayEnvironment, GatewayProvider, MatchingStrategy } from "@prisma/client";
 import { z } from "zod";
 
 /** Easebuzz environment selector. */
@@ -9,9 +9,11 @@ export const matchingStrategySchema = z.nativeEnum(MatchingStrategy);
 
 /** Gateway credential update payload (plaintext secrets, encrypted at rest). */
 export const gatewayUpdateSchema = z.object({
-  key: z.string().min(1),
-  salt: z.string().min(1),
-  merchantEmail: z.string().email(),
+  provider: z.nativeEnum(GatewayProvider).optional(),
+  credentials: z.record(z.string(), z.string()).refine(
+    (value) => Object.keys(value).length > 0,
+    { message: "Credentials cannot be empty" },
+  ),
   environment: gatewayEnvironmentSchema,
   isActive: z.boolean().optional(),
 });
@@ -41,15 +43,17 @@ export const settingsUpdateSchema = z
 
 export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;
 
-/** Gateway view with secrets masked (never exposes raw key/salt). */
+/** Gateway view with secrets masked (never exposes raw credentials). */
 export const maskedGatewaySchema = z.object({
   id: z.string(),
   provider: z.string(),
-  keyMasked: z.string(),
-  saltMasked: z.string(),
-  merchantEmail: z.string(),
+  credentialsMasked: z.record(z.string(), z.string()),
   environment: gatewayEnvironmentSchema,
   isActive: z.boolean(),
+  connectionStatus: z.string(),
+  webhookHealth: z.string(),
+  connectedAt: z.string().nullable(),
+  lastWebhookAt: z.string().nullable(),
 });
 
 export type MaskedGateway = z.infer<typeof maskedGatewaySchema>;

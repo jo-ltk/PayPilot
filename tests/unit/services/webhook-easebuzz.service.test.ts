@@ -2,14 +2,16 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const {
   eventUpdate,
-  gatewayFindFirst,
+  gatewayFindUnique,
+  gatewayUpdate,
   txnUpsert,
   txnFindUnique,
   settlementUpsert,
   refundUpsert,
 } = vi.hoisted(() => ({
   eventUpdate: vi.fn(),
-  gatewayFindFirst: vi.fn(),
+  gatewayFindUnique: vi.fn(),
+  gatewayUpdate: vi.fn(),
   txnUpsert: vi.fn(),
   txnFindUnique: vi.fn(),
   settlementUpsert: vi.fn(),
@@ -21,7 +23,10 @@ const { send } = vi.hoisted(() => ({ send: vi.fn() }));
 vi.mock("@/lib/db", () => ({
   prisma: {
     webhookEvent: { update: eventUpdate },
-    paymentGateway: { findFirst: gatewayFindFirst },
+    paymentGateway: {
+      findUnique: gatewayFindUnique,
+      update: gatewayUpdate,
+    },
     gatewayTransaction: { upsert: txnUpsert, findUnique: txnFindUnique },
     gatewaySettlement: { upsert: settlementUpsert },
     gatewayRefund: { upsert: refundUpsert },
@@ -29,12 +34,19 @@ vi.mock("@/lib/db", () => ({
 }));
 vi.mock("@/lib/inngest/client", () => ({ inngest: { send } }));
 
+import "@/lib/gateways/index";
 import { processEasebuzzWebhook } from "@/lib/services/webhook.service";
 
 /** Stages the PROCESSING update to return the given stored event. */
 function stageEvent(eventType: string, payload: Record<string, string>): void {
   eventUpdate
-    .mockResolvedValueOnce({ id: "evt_1", shopId: "s1", eventType, payload })
+    .mockResolvedValueOnce({
+      id: "evt_1",
+      shopId: "s1",
+      source: "EASEBUZZ",
+      eventType,
+      payload,
+    })
     .mockResolvedValue(undefined);
 }
 
@@ -51,7 +63,8 @@ describe("processEasebuzzWebhook", () => {
       key: "k",
       hash: "h",
     });
-    gatewayFindFirst.mockResolvedValue({ id: "g1", shopId: "s1" });
+    gatewayFindUnique.mockResolvedValue({ id: "g1", shopId: "s1" });
+    gatewayUpdate.mockResolvedValue(undefined);
     txnUpsert.mockResolvedValue(undefined);
 
     await processEasebuzzWebhook("evt_1");
@@ -72,7 +85,8 @@ describe("processEasebuzzWebhook", () => {
       key: "k",
       hash: "h",
     });
-    gatewayFindFirst.mockResolvedValue({ id: "g1", shopId: "s1" });
+    gatewayFindUnique.mockResolvedValue({ id: "g1", shopId: "s1" });
+    gatewayUpdate.mockResolvedValue(undefined);
     settlementUpsert.mockResolvedValue(undefined);
 
     await processEasebuzzWebhook("evt_1");
@@ -89,6 +103,8 @@ describe("processEasebuzzWebhook", () => {
       key: "k",
       hash: "h",
     });
+    gatewayFindUnique.mockResolvedValue({ id: "g1", shopId: "s1" });
+    gatewayUpdate.mockResolvedValue(undefined);
     txnFindUnique.mockResolvedValue(null);
 
     await expect(processEasebuzzWebhook("evt_1")).rejects.toThrow();

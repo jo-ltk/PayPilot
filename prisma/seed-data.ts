@@ -83,7 +83,6 @@ export function buildSeedData() {
       id: SEED_IDS.gateway,
       shopId: SEED_IDS.shop,
       provider: GatewayProvider.EASEBUZZ,
-      merchantEmail: "merchant@settleflow-demo.test",
       environment: GatewayEnvironment.SANDBOX,
       isActive: true,
     },

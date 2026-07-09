@@ -25,6 +25,22 @@ enum Role {
 
 enum GatewayProvider {
   EASEBUZZ
+  RAZORPAY
+  CASHFREE
+}
+
+enum ConnectionStatus {
+  PENDING
+  CONNECTED
+  FAILED
+  DISCONNECTED
+}
+
+enum WebhookHealth {
+  UNKNOWN
+  HEALTHY
+  DEGRADED
+  FAILED
 }
 
 enum GatewayEnvironment {
@@ -59,6 +75,8 @@ enum ReconciliationStatus {
 enum WebhookSource {
   SHOPIFY
   EASEBUZZ
+  RAZORPAY
+  CASHFREE
 }
 
 enum WebhookStatus {
@@ -144,22 +162,51 @@ model ShopMember {
 // ---------------------------------------------------------------------------
 
 model PaymentGateway {
-  id            String             @id @default(cuid())
-  shopId        String
-  provider      GatewayProvider    @default(EASEBUZZ)
-  key           String
-  salt          String
-  merchantEmail String
-  environment   GatewayEnvironment @default(SANDBOX)
-  isActive      Boolean            @default(true)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  id                       String             @id @default(cuid())
+  shopId                   String
+  provider                 GatewayProvider
+  credentials              String
+  webhookSecret            String?
+  webhookVersion           String?
+  environment              GatewayEnvironment @default(SANDBOX)
+  connectionStatus         ConnectionStatus   @default(PENDING)
+  webhookHealth            WebhookHealth      @default(UNKNOWN)
+  isActive                 Boolean            @default(true)
+  connectedAt              DateTime?
+  disconnectedAt           DateTime?
+  lastWebhookAt            DateTime?
+  lastSuccessfulWebhookAt  DateTime?
+  lastFailedWebhookAt      DateTime?
+  lastSyncAt               DateTime?
+  lastSettlementImportAt   DateTime?
+  lastRefundImportAt       DateTime?
+  lastFailedEventAt        DateTime?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
 
-  shop         Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop         Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
   transactions GatewayTransaction[]
   settlements  GatewaySettlement[]
+  auditLogs    IntegrationAuditLog[]
 
+  @@unique([shopId, provider])
   @@index([shopId])
+}
+
+model IntegrationAuditLog {
+  id        String          @id @default(cuid())
+  shopId    String
+  gatewayId String?
+  provider  GatewayProvider
+  action    String
+  actorId   String?
+  metadata  Json
+  createdAt DateTime        @default(now())
+
+  gateway PaymentGateway? @relation(fields: [gatewayId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, provider])
+  @@index([gatewayId])
 }
 
 model MatchingConfig {

@@ -94,11 +94,17 @@ const mockSettings = {
   gateway: {
     id: "gw-1",
     provider: "EASEBUZZ",
-    keyMasked: "****1234",
-    saltMasked: "****5678",
-    merchantEmail: "merchant@example.com",
+    credentialsMasked: {
+      key: "****1234",
+      salt: "****5678",
+      merchantEmail: "merchant@example.com",
+    },
     environment: GatewayEnvironment.SANDBOX,
     isActive: true,
+    connectionStatus: "CONNECTED",
+    webhookHealth: "HEALTHY",
+    connectedAt: null,
+    lastWebhookAt: null,
   },
   matching: {
     strategy: MatchingStrategy.UDF_ORDER_ID,
@@ -166,7 +172,10 @@ export const apiHandlers = [
 
   http.patch("/api/shops/:shopId/settings", async ({ request }) => {
     const body = (await request.json()) as {
-      gateway?: { merchantEmail?: string; environment?: GatewayEnvironment };
+      gateway?: {
+        credentials?: { merchantEmail?: string };
+        environment?: GatewayEnvironment;
+      };
       matching?: { strategy?: MatchingStrategy };
     };
 
@@ -174,8 +183,12 @@ export const apiHandlers = [
       gateway: body.gateway
         ? {
             ...mockSettings.gateway,
-            merchantEmail:
-              body.gateway.merchantEmail ?? mockSettings.gateway.merchantEmail,
+            credentialsMasked: {
+              ...mockSettings.gateway.credentialsMasked,
+              merchantEmail:
+                body.gateway.credentials?.merchantEmail ??
+                mockSettings.gateway.credentialsMasked.merchantEmail,
+            },
             environment:
               body.gateway.environment ?? mockSettings.gateway.environment,
           }

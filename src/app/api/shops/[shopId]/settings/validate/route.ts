@@ -1,12 +1,11 @@
 import { randomUUID } from "crypto";
 
-import { Role } from "@prisma/client";
+import { GatewayProvider, Role } from "@prisma/client";
 import type { NextRequest } from "next/server";
 
 import { jsonSuccess, withErrorHandling } from "@/lib/api/response";
 import { requireShopAccess } from "@/lib/auth/require-shop-access";
-import { getEnv } from "@/lib/env";
-import { validateCredentials } from "@/lib/easebuzz/client";
+import { paymentGatewayRegistry } from "@/lib/gateways/index";
 import { getGatewayCredentials } from "@/lib/services/settings.service";
 import type { ValidateResponse } from "@/schemas/settings.schema";
 
@@ -15,20 +14,7 @@ const ROUTE = "/api/shops/[shopId]/settings/validate";
 type RouteContext = { params: Promise<{ shopId: string }> };
 
 /**
- * Builds the Easebuzz webhook URLs a merchant copies into their dashboard.
- * @returns Transaction, payout, and refund webhook URLs
- */
-function buildWebhookUrls(): ValidateResponse["webhookUrls"] {
-  const base = `${getEnv().HOST ?? ""}/api/webhooks/easebuzz`;
-  return {
-    transaction: `${base}/transaction`,
-    payout: `${base}/payout`,
-    refund: `${base}/refund`,
-  };
-}
-
-/**
- * Validates stored Easebuzz credentials against the gateway API. Requires ADMIN+.
+ * Validates stored gateway credentials against the provider API. Requires ADMIN+.
  * @param _request - Incoming request (unused)
  * @param context - Route params containing the shop id
  * @returns Validation outcome plus webhook URLs
@@ -44,10 +30,23 @@ export async function POST(
     async () => {
       await requireShopAccess(shopId, Role.ADMIN);
       const credentials = await getGatewayCredentials(shopId);
-      const result = await validateCredentials(credentials);
+      const adapter = paymentGatewayRegistry.get(GatewayProvider.EASEBUZZ);
+      const result = await adapter.testConnection(
+        {
+          key: credentials.key,
+          salt: credentials.salt,
+          merchantEmail: credentials.merchantEmail,
+        },
+        credentials.environment,
+      );
+      const webhookUrls = adapter.getWebhookUrls(shopId);
       const payload: ValidateResponse = {
         ...result,
-        webhookUrls: buildWebhookUrls(),
+        webhookUrls: {
+          transaction: webhookUrls.transaction ?? "",
+          payout: webhookUrls.payout ?? "",
+          refund: webhookUrls.refund ?? "",
+        },
       };
       return jsonSuccess(payload);
     },

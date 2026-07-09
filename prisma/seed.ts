@@ -3,7 +3,7 @@ import { resolve } from "path";
 import { PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 
-import { encrypt } from "@/lib/crypto/encrypt";
+import { encryptCredentials } from "@/lib/gateways/credentials";
 
 import { buildSeedData, DEMO_GATEWAY_SECRETS } from "./seed-data";
 
@@ -74,8 +74,13 @@ async function main(): Promise<void> {
 
   const gateway = {
     ...data.gateway,
-    key: encrypt(DEMO_GATEWAY_SECRETS.key),
-    salt: encrypt(DEMO_GATEWAY_SECRETS.salt),
+    credentials: encryptCredentials({
+      key: DEMO_GATEWAY_SECRETS.key,
+      salt: DEMO_GATEWAY_SECRETS.salt,
+      merchantEmail: "merchant@settleflow-demo.test",
+    }),
+    connectionStatus: "CONNECTED" as const,
+    connectedAt: new Date(),
   };
   await prisma.paymentGateway.upsert({
     where: { id: gateway.id },

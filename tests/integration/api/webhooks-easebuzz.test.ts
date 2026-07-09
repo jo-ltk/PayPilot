@@ -19,7 +19,8 @@ vi.mock("@/lib/inngest/client", () => ({ inngest: { send } }));
 import { POST as transactionPost } from "@/app/api/webhooks/easebuzz/transaction/route";
 import { POST as payoutPost } from "@/app/api/webhooks/easebuzz/payout/route";
 import { POST as refundPost } from "@/app/api/webhooks/easebuzz/refund/route";
-import { encrypt } from "@/lib/crypto/encrypt";
+import { encryptCredentials } from "@/lib/gateways/credentials";
+import "@/lib/gateways/index";
 import {
   computeEasebuzzHash,
   type EasebuzzWebhookKind,
@@ -33,11 +34,28 @@ const storedGateway = {
   id: "g1",
   shopId: "s1",
   provider: "EASEBUZZ",
-  key: encrypt(MERCHANT_KEY),
-  salt: encrypt(MERCHANT_SALT),
-  merchantEmail: "merchant@example.com",
+  credentials: encryptCredentials({
+    key: MERCHANT_KEY,
+    salt: MERCHANT_SALT,
+    merchantEmail: "merchant@example.com",
+  }),
+  webhookSecret: null,
+  webhookVersion: null,
   environment: "SANDBOX",
+  connectionStatus: "CONNECTED",
+  webhookHealth: "HEALTHY",
   isActive: true,
+  connectedAt: new Date(),
+  disconnectedAt: null,
+  lastWebhookAt: null,
+  lastSuccessfulWebhookAt: null,
+  lastFailedWebhookAt: null,
+  lastSyncAt: null,
+  lastSettlementImportAt: null,
+  lastRefundImportAt: null,
+  lastFailedEventAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 /** Builds a signed form-urlencoded webhook request for a channel. */

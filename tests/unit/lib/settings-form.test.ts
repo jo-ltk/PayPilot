@@ -13,11 +13,17 @@ const baseline: SettingsResponse = {
   gateway: {
     id: "gw-1",
     provider: "EASEBUZZ",
-    keyMasked: "****1234",
-    saltMasked: "****5678",
-    merchantEmail: "merchant@example.com",
+    credentialsMasked: {
+      key: "****1234",
+      salt: "****5678",
+      merchantEmail: "merchant@example.com",
+    },
     environment: GatewayEnvironment.SANDBOX,
     isActive: true,
+    connectionStatus: "CONNECTED",
+    webhookHealth: "HEALTHY",
+    connectedAt: null,
+    lastWebhookAt: null,
   },
   matching: {
     strategy: MatchingStrategy.UDF_ORDER_ID,
@@ -61,7 +67,7 @@ describe("buildSettingsPatch", () => {
 
     const patch = buildSettingsPatch(values, baseline.matching, true);
 
-    expect(patch.gateway?.key).toBe("new-key");
+    expect(patch.gateway?.credentials.key).toBe("new-key");
     expect(patch.matching?.strategy).toBe(MatchingStrategy.UDF_ORDER_ID);
   });
 

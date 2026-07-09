@@ -1,17 +1,24 @@
-import { GatewayEnvironment, GatewayProvider, Role } from "@prisma/client";
+import {
+  ConnectionStatus,
+  GatewayEnvironment,
+  GatewayProvider,
+  Role,
+  WebhookHealth,
+} from "@prisma/client";
 import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { cookiesMock } = vi.hoisted(() => ({ cookiesMock: vi.fn() }));
-const { gatewayFindFirst } = vi.hoisted(() => ({ gatewayFindFirst: vi.fn() }));
+const { gatewayFindUnique } = vi.hoisted(() => ({ gatewayFindUnique: vi.fn() }));
 
 vi.mock("next/headers", () => ({ cookies: cookiesMock }));
 vi.mock("@/lib/db", () => ({
-  prisma: { paymentGateway: { findFirst: gatewayFindFirst } },
+  prisma: { paymentGateway: { findUnique: gatewayFindUnique } },
 }));
 
 import { POST as validate } from "@/app/api/shops/[shopId]/settings/validate/route";
-import { encrypt } from "@/lib/crypto/encrypt";
+import { encryptCredentials } from "@/lib/gateways/credentials";
+import "@/lib/gateways/index";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/auth/standalone";
 import type { Session } from "@/schemas/auth.schema";
 
@@ -41,15 +48,32 @@ function validateRequest(): Request {
 const ctx = { params: Promise.resolve({ shopId: "s1" }) };
 
 beforeEach(() => {
-  gatewayFindFirst.mockResolvedValue({
+  gatewayFindUnique.mockResolvedValue({
     id: "g1",
     shopId: "s1",
     provider: GatewayProvider.EASEBUZZ,
-    key: encrypt("merchant-key"),
-    salt: encrypt("merchant-salt"),
-    merchantEmail: "merchant@example.com",
+    credentials: encryptCredentials({
+      key: "merchant-key",
+      salt: "merchant-salt",
+      merchantEmail: "merchant@example.com",
+    }),
+    webhookSecret: null,
+    webhookVersion: null,
     environment: GatewayEnvironment.SANDBOX,
+    connectionStatus: ConnectionStatus.CONNECTED,
+    webhookHealth: WebhookHealth.HEALTHY,
     isActive: true,
+    connectedAt: new Date(),
+    disconnectedAt: null,
+    lastWebhookAt: null,
+    lastSuccessfulWebhookAt: null,
+    lastFailedWebhookAt: null,
+    lastSyncAt: null,
+    lastSettlementImportAt: null,
+    lastRefundImportAt: null,
+    lastFailedEventAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 });
 

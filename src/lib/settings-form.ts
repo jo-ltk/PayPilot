@@ -51,7 +51,7 @@ export function settingsToFormValues(
     provider: gateway?.provider ?? GatewayProvider.EASEBUZZ,
     merchantKey: "",
     merchantSalt: "",
-    merchantEmail: gateway?.merchantEmail ?? "",
+    merchantEmail: gateway?.credentialsMasked?.merchantEmail ?? "",
     environment: gateway?.environment ?? GatewayEnvironment.SANDBOX,
     strategy: matching?.strategy ?? DEFAULT_MATCHING.strategy,
     amountTolerancePaise:
@@ -70,9 +70,10 @@ export function maskedSecretHints(gateway: MaskedGateway | null | undefined): {
   keyHint: string;
   saltHint: string;
 } {
+  const masked = gateway?.credentialsMasked;
   return {
-    keyHint: gateway?.keyMasked ?? "Not configured",
-    saltHint: gateway?.saltMasked ?? "Not configured",
+    keyHint: masked?.key ?? "Not configured",
+    saltHint: masked?.salt ?? "Not configured",
   };
 }
 
@@ -97,9 +98,11 @@ export function buildSettingsPatch(
 
   if (includeGateway) {
     patch.gateway = {
-      key: values.merchantKey,
-      salt: values.merchantSalt,
-      merchantEmail: values.merchantEmail,
+      credentials: {
+        key: values.merchantKey,
+        salt: values.merchantSalt,
+        merchantEmail: values.merchantEmail,
+      },
       environment: values.environment,
     };
   }
